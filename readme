@@ -1,47 +1,74 @@
 ## Tech Challenge 2
 
+### AWS S3 Integration
 
-Rodando o projeto: 
+This project includes AWS S3 integration for file upload and management operations. See [S3_INTEGRATION.md](./S3_INTEGRATION.md) for detailed documentation.
+
+#### Quick S3 Setup:
+
+1. Set environment variables for AWS credentials
+2. Configure S3 bucket `3frnt-group6-bytebank`
+3. Use the S3 endpoints for file operations
+
+#### S3 Endpoints:
+
+- `POST /s3/signed-url` - Generate signed URLs for upload/download
+- `DELETE /s3/file` - Delete files from S3
+- `GET /s3/files` - List files in bucket
+- `GET /s3/file/metadata` - Get file metadata
+- `GET /s3/health` - Check S3 connectivity
+
+#### Test S3 Integration:
+
+Open `s3-test.html` in your browser to test the S3 functionality with a simple UI.
+
+---
+
+Rodando o projeto:
+
 - Docker
-    # Construir a imagem
-    docker build -t tech-challenge .
 
-    # Executar o container
-    docker run -p 3000:3000 tech-challenge
+  # Construir a imagem
+
+  docker build -t tech-challenge .
+
+  # Executar o container
+
+  docker run -p 3000:3000 tech-challenge
 
 - Sem docker
 
-    npm i
-    npm run dev
-
+  npm i
+  npm run dev
 
 ### Importando collection no postman
+
 - Neste projeto possui o arquivo tech-challenge-2.postman_collection que é uma collection do postman, você tendo o postman pode clicar no botão de import e selecionar esse arquivo lá na caixa de drop,
-após realizar a importação você terá todo os Requests desse projeto.
+  após realizar a importação você terá todo os Requests desse projeto.
 
 ![alt text](image.png)
 
 ![alt text](image-1.png)
-
 
 ### Swagger
 
 para acessar o Swagger basta você entrar na rota /docs
 as rotas que necessitam de Autenticação você pode colar o Bearer token no cadeado
 
-### Autenticando 
+### Autenticando
 
 #### Criando usuário
+
     "http:localhost:3000/user"
     body:
         {
             "username": "Aluno Carequinha",
             "email": "teste@gmail.com",
             "password": "testes"
-        }  
+        }
 
     cURL
-    ``` 
+    ```
         curl --location 'localhost:3000/user' \
         --header 'Content-Type: application/json' \
         --data-raw '{
@@ -66,8 +93,9 @@ as rotas que necessitam de Autenticação você pode colar o Bearer token no cad
     ```
 
 #### Autenticando
+
     "localhost:3000/user/auth"
-    Body: 
+    Body:
         {
             "email": "teste@gmail.com",
             "password": "testes"
@@ -97,6 +125,7 @@ as rotas que necessitam de Autenticação você pode colar o Bearer token no cad
 ### Conta
 
 #### Buscando conta
+
     "localhost:3000/account"
 
     Authorization: Bearer {{Token}}
@@ -156,6 +185,7 @@ as rotas que necessitam de Autenticação você pode colar o Bearer token no cad
     ```
 
 #### Criando Transação
+
     "localhost:3000/account/transaction"
 
     Body
@@ -191,6 +221,7 @@ as rotas que necessitam de Autenticação você pode colar o Bearer token no cad
         }
 
 #### Buscando extrato
+
     localhost:3000/account/{{accountId}}/statement
 
     Authorization Bearer {{Token}}

@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>S3 Upload Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .container {
+        border: 1px solid #ddd;
+        padding: 20px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+      }
+      .error {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      input[type="file"] {
+        margin: 10px 0;
+      }
+      textarea {
+        width: 100%;
+        height: 100px;
+        margin: 10px 0;
+      }
+      .file-action-btn {
+        font-size: 11px;
+        padding: 4px 8px;
+        margin: 2px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        background: #6c757d;
+        color: white;
+      }
+      .file-action-btn:hover {
+        background: #545b62;
+      }
+      .file-preview-container {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        background: #f8f9fa;
+      }
+      .metadata-container {
+        background: #e9ecef;
+        border-radius: 6px;
+        padding: 12px;
+        margin: 10px 0;
+        font-family: monospace;
+        font-size: 13px;
+      }
+      .action-buttons {
+        text-align: center;
+        padding: 12px;
+        background: #f1f3f4;
+        border-radius: 6px;
+        margin-top: 15px;
+      }
+      .action-buttons button,
+      .action-buttons a {
+        margin: 0 5px;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>S3 Upload Test</h1>
+
+    <div class="container">
+      <h3>0. CORS Test (No Auth Required)</h3>
+      <button onclick="corsTest()">Test CORS</button>
+      <div id="corsResult"></div>
+    </div>
+
+    <div class="container">
+      <h3>1. Authentication</h3>
+      <input
+        type="text"
+        id="token"
+        placeholder="Bearer Token"
+        style="width: 100%; padding: 5px"
+        value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RlIiwiZW1haWwiOiJ0ZXN0ZSIsInBhc3N3b3JkIjoidGVzdGUiLCJpZCI6IjY4NzA1NmU3YTA2MTVhYzQ2NzRjMmUzMyIsImlhdCI6MTc1MjE5Mjc1OCwiZXhwIjoxNzUyMjM1OTU4fQ.ioOaUqd9CgBcN0yKOLXyibTBaff1-gGxF86BQN62W4g"
+      />
+      <button onclick="validateToken()">Validate Token</button>
+      <small>JWT token is pre-filled for testing</small>
+      <div id="tokenResult"></div>
+    </div>
+
+    <div class="container">
+      <h3>2. File Upload</h3>
+      <input type="file" id="fileInput" />
+      <button onclick="uploadFile()">Upload to S3</button>
+      <div id="uploadResult"></div>
+    </div>
+
+    <div class="container">
+      <h3>3. List Files</h3>
+      <input
+        type="text"
+        id="prefix"
+        placeholder="File prefix (optional)"
+        style="width: 200px; padding: 5px"
+      />
+      <button onclick="listFiles()">List Files</button>
+      <div id="listResult"></div>
+    </div>
+
+    <div class="container">
+      <h3>4. Get/Download File</h3>
+      <input
+        type="text"
+        id="getFileKey"
+        placeholder="File key to get/download"
+        style="width: 300px; padding: 5px"
+      />
+      <button onclick="getFile()">Get Download URL</button>
+      <button onclick="downloadFile()">Download File</button>
+      <button onclick="previewFile()">Preview File</button>
+      <button onclick="getFileMetadata()">Get Metadata</button>
+      <div id="getFileResult"></div>
+      <div id="filePreview" style="margin-top: 10px"></div>
+    </div>
+
+    <div class="container">
+      <h3>5. Delete File</h3>
+      <input
+        type="text"
+        id="deleteKey"
+        placeholder="File key to delete"
+        style="width: 300px; padding: 5px"
+      />
+      <button onclick="deleteFile()">Delete File</button>
+      <div id="deleteResult"></div>
+    </div>
+
+    <div class="container">
+      <h3>6. S3 Health Check</h3>
+      <button onclick="healthCheck()">Check S3 Health</button>
+      <div id="healthResult"></div>
+    </div>
+
+    <script>
+      const API_BASE = "http://localhost:3000";
+      const BUCKET_NAME = "3frnt-group6-bytebank";
+
+      function getAuthHeaders() {
+        const token = document.getElementById("token").value;
+        if (!token) {
+          alert("Please enter a valid Bearer token");
+          return null;
+        }
+        return {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        };
+      }
+
+      function showResult(elementId, message, isError = false) {
+        const element = document.getElementById(elementId);
+        element.innerHTML = `<div class="container ${
+          isError ? "error" : "success"
+        }">${message}</div>`;
+      }
+
+      async function corsTest() {
+        try {
+          console.log("Testing CORS with:", `${API_BASE}/docs`);
+
+          const response = await fetch(`${API_BASE}/docs`, {
+            method: "GET",
+            mode: "cors",
+          });
+
+          console.log("CORS Test Response status:", response.status);
+          console.log("CORS Test Response headers:", [
+            ...response.headers.entries(),
+          ]);
+
+          if (response.ok) {
+            showResult(
+              "corsResult",
+              "✅ CORS is working correctly! Server is accessible."
+            );
+          } else {
+            showResult(
+              "corsResult",
+              `❌ Server responded with status: ${response.status}`,
+              true
+            );
+          }
+        } catch (error) {
+          console.error("CORS Test error:", error);
+          showResult("corsResult", `❌ CORS Error: ${error.message}`, true);
+        }
+      }
+
+      async function uploadFile() {
+        const fileInput = document.getElementById("fileInput");
+        const file = fileInput.files[0];
+
+        if (!file) {
+          showResult("uploadResult", "Please select a file first", true);
+          return;
+        }
+
+        const headers = getAuthHeaders();
+        if (!headers) return;
+
+        try {
+          // Step 1: Generate signed URL
+          const key = `uploads/${file.name}`; // Backend will generate unique name
+          const signedUrlResponse = await fetch(`${API_BASE}/s3/signed-url`, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({
+              bucket: BUCKET_NAME,
+              key: key,
+              contentType: file.type,
+              operation: "putObject",
+              originalFileName: file.name,
+            }),
+          });
+
+          if (!signedUrlResponse.ok) {
+            const error = await signedUrlResponse.json();
+            throw new Error(error.error || "Failed to generate signed URL");
+          }
+
+          const { signedUrl, key: generatedKey } =
+            await signedUrlResponse.json();
+
+          // Step 2: Upload file to S3
+          const uploadResponse = await fetch(signedUrl, {
+            method: "PUT",
+            body: file,
+            headers: {
+              "Content-Type": file.type,
+            },
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error("Failed to upload file to S3");
+          }
+
+          showResult(
+            "uploadResult",
+            `
+                    <strong>File uploaded successfully!</strong><br>
+                    Original Name: ${file.name}<br>
+                    Generated Key: ${generatedKey}<br>
+                    Size: ${file.size} bytes<br>
+                    Type: ${file.type}
+                `
+          );
+        } catch (error) {
+          showResult("uploadResult", `Upload failed: ${error.message}`, true);
+        }
+      }
+
+      async function listFiles() {
+        const headers = getAuthHeaders();
+        if (!headers) return;
+
+        const prefix = document.getElementById("prefix").value;
+        let url = `${API_BASE}/s3/files?bucket=${BUCKET_NAME}`;
+        if (prefix) {
+          url += `&prefix=${encodeURIComponent(prefix)}`;
+        }
+
+        try {
+          const response = await fetch(url, {
+            method: "GET",
+            headers: {
+              Authorization: headers.Authorization,
+            },
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to list files");
+          }
+
+          const data = await response.json();
+
+          let resultHtml = `<strong>Found ${data.files.length} files:</strong><br>`;
+          if (data.files.length === 0) {
+            resultHtml += "No files found.";
+          } else {
+            data.files.forEach((file) => {
+              resultHtml += `
+                            <div style="margin: 5px 0; padding: 5px; background: #f8f9fa; border-radius: 3px;">
+                                <strong>${file.key}</strong><br>
+                                Size: ${file.size} bytes | Modified: ${new Date(
+                file.lastModified
+              ).toLocaleString()}<br>
+                                <div style="margin-top: 5px;">
+                                  <button onclick="document.getElementById('getFileKey').value='${
+                                    file.key
+                                  }'" 
+                                          class="file-action-btn">
+                                    Use for Get/Download
+                                  </button>
+                                  <button onclick="document.getElementById('deleteKey').value='${
+                                    file.key
+                                  }'" 
+                                          class="file-action-btn">
+                                    Use for Delete
+                                  </button>
+                                  <button onclick="copyToClipboard('${
+                                    file.key
+                                  }')" 
+                                          class="file-action-btn">
+                                    Copy Key
+                                  </button>
+                                </div>
+                            </div>
+                        `;
+            });
+          }
+
+          showResult("listResult", resultHtml);
+        } catch (error) {
+          showResult("listResult", `List failed: ${error.message}`, true);
+        }
+      }
+
+      async function getFile() {
+        const key = document.getElementById("getFileKey").value;
+        if (!key) {
+          showResult("getFileResult", "Please enter a file key", true);
+          return;
+        }
+
+        const headers = getAuthHeaders();
+        if (!headers) return;
+
+        try {
+          // Generate signed URL for download
+          const response = await fetch(`${API_BASE}/s3/signed-url`, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({
+              bucket: BUCKET_NAME,
+              key: key,
+              operation: "getObject",
+            }),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to generate download URL");
+          }
+
+          const data = await response.json();
+          showResult(
+            "getFileResult",
+            `
+            <strong>Download URL Generated!</strong><br>
+            File: ${key}<br>
+            <a href="${data.signedUrl}" target="_blank" style="color: #007bff; text-decoration: none;">
+              🔗 Click to Download/View File
+            </a><br>
+            <small>URL expires in ${data.expiresIn} seconds</small>
+            `
+          );
+        } catch (error) {
+          showResult(
+            "getFileResult",
+            `Get file failed: ${error.message}`,
+            true
+          );
+        }
+      }
+
+      async function downloadFile() {
+        const key = document.getElementById("getFileKey").value;
+        if (!key) {
+          showResult("getFileResult", "Please enter a file key", true);
+          return;
+        }
+
+        const headers = getAuthHeaders();
+        if (!headers) return;
+
+        try {
+          // Generate signed URL for download
+          const signedUrlResponse = await fetch(`${API_BASE}/s3/signed-url`, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({
+              bucket: BUCKET_NAME,
+              key: key,
+              operation: "getObject",
+            }),
+          });
+
+          if (!signedUrlResponse.ok) {
+            const error = await signedUrlResponse.json();
+            throw new Error(error.error || "Failed to generate download URL");
+          }
+
+          const { signedUrl } = await signedUrlResponse.json();
+
+          // Download the file using the signed URL
+          const fileResponse = await fetch(signedUrl);
+          if (!fileResponse.ok) {
+            throw new Error("Failed to download file from S3");
+          }
+
+          const blob = await fileResponse.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = key.split("/").pop(); // Get filename from key
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+
+          showResult(
+            "getFileResult",
+            `✅ File "${key.split("/").pop()}" downloaded successfully!`
+          );
+        } catch (error) {
+          showResult(
+            "getFileResult",
+            `Download failed: ${error.message}`,
+            true
+          );
+        }
+      }
+
+      async function previewFile() {
+        const key = document.getElementById("getFileKey").value;
+        if (!key) {
+          showResult("getFileResult", "Please enter a file key", true);
+          return;
+        }
+
+        const headers = getAuthHeaders();
+        if (!headers) return;
+
+        try {
+          // Generate signed URL for download
+          const signedUrlResponse = await fetch(`${API_BASE}/s3/signed-url`, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({
+              bucket: BUCKET_NAME,
+              key: key,
+              operation: "getObject",
+            }),
+          });
+
+          if (!signedUrlResponse.ok) {
+            const error = await signedUrlResponse.json();
+            throw new Error(error.error || "Failed to generate download URL");
+          }
+
+          const { signedUrl } = await signedUrlResponse.json();
+
+          // Get file metadata to determine content type
+          const metadataResponse = await fetch(
+            `${API_BASE}/s3/file/metadata?bucket=${BUCKET_NAME}&key=${encodeURIComponent(
+              key
+            )}`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: headers.Authorization,
+              },
+            }
+          );
+
+          let contentType = "application/octet-stream";
+          if (metadataResponse.ok) {
+            const metadata = await metadataResponse.json();
+            contentType =
+              metadata.metadata.contentType || "application/octet-stream";
+          }
+
+          const fileName = key.split("/").pop();
+
+          // Use the new render function
+          const previewHtml = await renderFile(
+            signedUrl,
+            fileName,
+            contentType
+          );
+
+          document.getElementById("filePreview").innerHTML = previewHtml;
+          showResult(
+            "getFileResult",
+            `✅ File "${fileName}" preview loaded successfully!`
+          );
+        } catch (error) {
+          console.error("Preview error:", error);
+          showResult("getFileResult", `Preview failed: ${error.message}`, true);
+          document.getElementById("filePreview").innerHTML = "";
+        }
+      }
+
+      async function getFileMetadata() {
+        const key = document.getElementById("getFileKey").value;
+        if (!key) {
+          showResult("getFileResult", "Please enter a file key", true);
+          return;
+        }
+
+        const headers = getAuthHeaders();
+        if (!headers) return;
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/s3/file/metadata?bucket=${BUCKET_NAME}&key=${encodeURIComponent(
+              key
+            )}`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: headers.Authorization,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to get file metadata");
+          }
+
+          const data = await response.json();
+          const metadata = data.metadata;
+
+          showResult(
+            "getFileResult",
+            `
+            <strong>File Metadata:</strong><br>
+            <div class="metadata-container">
+              <strong>File:</strong> ${key}<br>
+              <strong>Content Type:</strong> ${metadata.contentType}<br>
+              <strong>Size:</strong> ${metadata.contentLength} bytes (${(
+              metadata.contentLength / 1024
+            ).toFixed(2)} KB)<br>
+              <strong>Last Modified:</strong> ${new Date(
+                metadata.lastModified
+              ).toLocaleString()}<br>
+              <strong>ETag:</strong> ${metadata.etag}<br>
+              <strong>Storage Class:</strong> ${
+                metadata.storageClass || "STANDARD"
+              }<br>
+              ${
+                metadata.metadata && Object.keys(metadata.metadata).length > 0
+                  ? `<strong>Custom Metadata:</strong><br><pre style="margin: 5px 0; font-size: 11px;">${JSON.stringify(
+                      metadata.metadata,
+                      null,
+                      2
+                    )}</pre>`
+                  : ""
+              }
+            </div>
+            `
+          );
+        } catch (error) {
+          showResult(
+            "getFileResult",
+            `Get metadata failed: ${error.message}`,
+            true
+          );
+        }
+      }
+
+      async function deleteFile() {
+        const key = document.getElementById("deleteKey").value;
+        if (!key) {
+          showResult("deleteResult", "Please enter a file key to delete", true);
+          return;
+        }
+
+        const headers = getAuthHeaders();
+        if (!headers) return;
+
+        try {
+          const response = await fetch(`${API_BASE}/s3/file`, {
+            method: "DELETE",
+            headers: headers,
+            body: JSON.stringify({
+              bucket: BUCKET_NAME,
+              key: key,
+            }),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to delete file");
+          }
+
+          const data = await response.json();
+          showResult("deleteResult", `File deleted successfully: ${key}`);
+        } catch (error) {
+          showResult("deleteResult", `Delete failed: ${error.message}`, true);
+        }
+      }
+
+      async function healthCheck() {
+        const headers = getAuthHeaders();
+        if (!headers) return;
+
+        try {
+          console.log("Making request to:", `${API_BASE}/s3/health`);
+          console.log("With headers:", headers);
+
+          const response = await fetch(`${API_BASE}/s3/health`, {
+            method: "GET",
+            headers: {
+              Authorization: headers.Authorization,
+            },
+          });
+
+          console.log("Response status:", response.status);
+          console.log("Response headers:", [...response.headers.entries()]);
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Health check failed");
+          }
+
+          const data = await response.json();
+          showResult(
+            "healthResult",
+            `
+                    <strong>S3 Health Check Passed!</strong><br>
+                    Bucket: ${data.bucket}<br>
+                    Region: ${data.region}<br>
+                    Message: ${data.message}
+                `
+          );
+        } catch (error) {
+          console.error("Health check error:", error);
+          showResult(
+            "healthResult",
+            `Health check failed: ${error.message}`,
+            true
+          );
+        }
+      }
+
+      function decodeJWT(token) {
+        try {
+          const base64Url = token.split(".")[1];
+          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split("")
+              .map(function (c) {
+                return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+              })
+              .join("")
+          );
+          return JSON.parse(jsonPayload);
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(
+          function () {
+            alert("URL copied to clipboard!");
+          },
+          function (err) {
+            console.error("Could not copy text: ", err);
+            alert("Failed to copy URL to clipboard");
+          }
+        );
+      }
+
+      async function renderFile(signedUrl, fileName, contentType) {
+        try {
+          const fileResponse = await fetch(signedUrl);
+          if (!fileResponse.ok) {
+            throw new Error("Failed to fetch file from S3");
+          }
+
+          const blob = await fileResponse.blob();
+          const url = URL.createObjectURL(blob);
+
+          // Create a more sophisticated preview based on content type
+          let previewHtml = `<div class="file-preview-container">`;
+          previewHtml += `<h4 style="margin-top: 0; color: #495057;">📁 ${fileName}</h4>`;
+
+          if (contentType.startsWith("image/")) {
+            previewHtml += `
+              <div style="text-align: center;">
+                <img src="${url}" alt="${fileName}" 
+                     style="max-width: 100%; max-height: 500px; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />
+              </div>
+            `;
+          } else if (
+            contentType.startsWith("text/") ||
+            contentType === "application/json" ||
+            contentType === "application/xml"
+          ) {
+            // For text files, read the content and display with syntax highlighting
+            const text = await blob.text();
+            previewHtml += `
+              <div style="background: #f4f4f4; border-radius: 4px; padding: 10px; overflow-x: auto; max-height: 400px; overflow-y: auto;">
+                <pre style="margin: 0; font-family: 'Courier New', monospace; font-size: 12px; white-space: pre-wrap;">${text}</pre>
+              </div>
+            `;
+          } else if (contentType === "application/pdf") {
+            previewHtml += `
+              <div style="text-align: center;">
+                <embed src="${url}" type="application/pdf" width="100%" height="500px" style="border: 1px solid #ccc; border-radius: 4px;" />
+                <br><small style="color: #666;">If PDF doesn't load, <a href="${url}" target="_blank" style="color: #007bff;">click here to open in new tab</a></small>
+              </div>
+            `;
+          } else if (contentType.startsWith("video/")) {
+            previewHtml += `
+              <div style="text-align: center;">
+                <video controls style="max-width: 100%; max-height: 400px; border-radius: 4px;">
+                  <source src="${url}" type="${contentType}">
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            `;
+          } else if (contentType.startsWith("audio/")) {
+            previewHtml += `
+              <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">🎵</div>
+                <audio controls style="width: 100%; max-width: 400px;">
+                  <source src="${url}" type="${contentType}">
+                  Your browser does not support the audio tag.
+                </audio>
+              </div>
+            `;
+          } else {
+            previewHtml += `
+              <div style="text-align: center; padding: 30px;">
+                <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
+                <p style="color: #666; margin: 5px 0;">Content Type: ${contentType}</p>
+                <p style="color: #888; margin: 15px 0;">Preview not available for this file type</p>
+              </div>
+            `;
+          }
+
+          previewHtml += `
+            <div class="action-buttons">
+              <button onclick="window.open('${url}', '_blank')" style="background: #007bff; color: white;">
+                🔗 Open in New Tab
+              </button>
+              <button onclick="copyToClipboard('${url}')" style="background: #28a745; color: white;">
+                📋 Copy URL
+              </button>
+              <a href="${url}" download="${fileName}" style="background: #17a2b8; color: white;">
+                💾 Download
+              </a>
+              <br><small style="color: #666; margin-top: 10px; display: block;">⏰ URL expires in 1 hour</small>
+            </div>
+          `;
+
+          previewHtml += `</div>`;
+
+          return previewHtml;
+        } catch (error) {
+          return `<div style="color: red; padding: 10px; border: 1px solid #f5c6cb; background: #f8d7da; border-radius: 4px;">
+            ❌ Failed to render file: ${error.message}
+          </div>`;
+        }
+      }
+
+      async function validateToken() {
+        const token = document.getElementById("token").value;
+        if (!token) {
+          showResult("tokenResult", "Please enter a token first", true);
+          return;
+        }
+
+        try {
+          // Decode JWT to show info
+          const decoded = decodeJWT(token);
+          if (decoded) {
+            const isExpired = decoded.exp * 1000 < Date.now();
+            const expiryDate = new Date(decoded.exp * 1000);
+
+            showResult(
+              "tokenResult",
+              `
+              <strong>Token Info:</strong><br>
+              User: ${decoded.username || "N/A"}<br>
+              Email: ${decoded.email || "N/A"}<br>
+              ID: ${decoded.id || "N/A"}<br>
+              Issued: ${new Date(decoded.iat * 1000).toLocaleString()}<br>
+              Expires: ${expiryDate.toLocaleString()}<br>
+              Status: ${isExpired ? "❌ EXPIRED" : "✅ VALID"}
+            `,
+              isExpired
+            );
+          } else {
+            showResult("tokenResult", "❌ Invalid JWT format", true);
+          }
+        } catch (error) {
+          showResult(
+            "tokenResult",
+            `❌ Token validation failed: ${error.message}`,
+            true
+          );
+        }
+      }
+    </script>
+  </body>
+</html>
