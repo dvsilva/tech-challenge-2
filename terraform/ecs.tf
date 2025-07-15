@@ -249,7 +249,7 @@ resource "aws_cloudwatch_log_group" "app" {
 resource "aws_ssm_parameter" "mongodb_uri" {
   name  = "/${var.app_name}/${var.environment}/mongodb-uri"
   type  = "SecureString"
-  value = var.mongodb_uri != "" ? var.mongodb_uri : "mongodb://localhost:27017/tech-challenge-2"
+  value = var.mongodb_uri
 
   tags = {
     Name = "${var.app_name}-mongodb-uri"
