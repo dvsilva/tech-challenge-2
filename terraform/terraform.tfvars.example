@@ -1,0 +1,91 @@
+# ==========================================
+# TERRAFORM CONFIGURATION EXAMPLE
+# Tech Challenge 2 - FIAP 3FRNT
+# ==========================================
+
+# AWS Configuration
+aws_region    = "us-east-1"
+bucket_name   = "3frnt-group6-bytebank-dev"
+environment   = "development"
+
+# S3 Configuration
+cors_origins = [
+  "http://localhost:3000",
+  "http://localhost:3001", 
+  "http://localhost:4200",
+  "http://localhost:8080",
+  "http://127.0.0.1:5500",
+  "http://127.0.0.1:5501"
+]
+
+signed_url_expires = 3600
+
+# ==========================================
+# ECS CONFIGURATION
+# ==========================================
+
+# Application Settings
+app_name       = "tech-challenge-2-dev"
+app_port       = 3000
+node_env       = "development"
+
+# Resource Allocation
+cpu            = 512
+memory         = 1024
+desired_count  = 1
+
+# ==========================================
+# SECRETS (Set via environment variables)
+# ==========================================
+
+# MongoDB Connection String
+# mongodb_uri = "mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority"
+# mongodb_uri = "mongodb://localhost:27017/tech-challenge-2"
+
+# JWT Secret Key
+# jwt_secret = "your-super-secret-jwt-key-change-this-in-production"
+
+# ==========================================
+# EXAMPLE CONFIGURATIONS BY ENVIRONMENT
+# ==========================================
+
+# DEVELOPMENT
+# aws_region     = "us-east-1"
+# bucket_name    = "3frnt-group6-bytebank-dev"
+# environment    = "development"
+# app_name       = "tech-challenge-2-dev"
+# cpu            = 256
+# memory         = 512
+# desired_count  = 1
+# node_env       = "development"
+
+# STAGING
+# aws_region     = "us-east-1"
+# bucket_name    = "3frnt-group6-bytebank-staging"
+# environment    = "staging"
+# app_name       = "tech-challenge-2-staging"
+# cpu            = 512
+# memory         = 1024
+# desired_count  = 1
+# node_env       = "production"
+
+# PRODUCTION
+# aws_region     = "us-east-1"
+# bucket_name    = "3frnt-group6-bytebank-prod"
+# environment    = "production"
+# app_name       = "tech-challenge-2-prod"
+# cpu            = 1024
+# memory         = 2048
+# desired_count  = 2
+# node_env       = "production"
+
+# ==========================================
+# USAGE INSTRUCTIONS
+# ==========================================
+
+# 1. Copy this file to terraform.tfvars
+# 2. Uncomment and set the appropriate values
+# 3. Set sensitive variables via environment:
+#    export TF_VAR_mongodb_uri="your-mongodb-uri"
+#    export TF_VAR_jwt_secret="your-jwt-secret"
+# 4. Run: terraform plan -var-file="terraform.tfvars"
