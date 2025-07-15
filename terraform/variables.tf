@@ -30,7 +30,8 @@ variable "cors_origins" {
     "http://localhost:4200",
     "http://localhost:8080",
     "http://127.0.0.1:5500",
-    "http://127.0.0.1:5501"
+    "http://127.0.0.1:5501",
+    "http://tech-challenge-2-alb-1096144064.us-east-1.elb.amazonaws.com"
   ]
 }
 

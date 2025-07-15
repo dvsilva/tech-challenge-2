@@ -1,8 +1,110 @@
-const { Router } = require('express')
-const UserController = require('./controller/User')
+const { Router } = require("express");
+const UserController = require("./controller/User");
 
-const userController = new UserController({})
-const router = Router()
+const userController = new UserController({});
+const router = Router();
+
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Service is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "healthy"
+ *                 timestamp:
+ *                   type: string
+ *                   example: "2025-07-14T10:30:00.000Z"
+ *                 service:
+ *                   type: string
+ *                   example: "tech-challenge-2"
+ */
+router.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    service: "tech-challenge-2",
+    version: process.env.npm_package_version || "1.0.0",
+  });
+});
+
+/**
+ * @swagger
+ * /health/detailed:
+ *   get:
+ *     summary: Detailed health check with dependency checks
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Service and dependencies are healthy
+ *       503:
+ *         description: Service or dependencies are unhealthy
+ */
+router.get("/health/detailed", async (req, res) => {
+  const health = {
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    service: "tech-challenge-2",
+    version: process.env.npm_package_version || "1.0.0",
+    dependencies: {},
+  };
+
+  let overallStatus = 200;
+
+  // Check MongoDB connectivity
+  try {
+    const mongoose = require("mongoose");
+    if (mongoose.connection.readyState === 1) {
+      health.dependencies.mongodb = { status: "healthy", message: "Connected" };
+    } else {
+      health.dependencies.mongodb = {
+        status: "unhealthy",
+        message: "Not connected",
+      };
+      overallStatus = 503;
+    }
+  } catch (error) {
+    health.dependencies.mongodb = {
+      status: "unhealthy",
+      message: error.message,
+    };
+    overallStatus = 503;
+  }
+
+  // Check environment variables
+  const requiredEnvVars = ["NODE_ENV", "PORT", "MONGODB_URI"];
+  const missingEnvVars = requiredEnvVars.filter(
+    (envVar) => !process.env[envVar]
+  );
+
+  if (missingEnvVars.length === 0) {
+    health.dependencies.environment = {
+      status: "healthy",
+      message: "All required env vars present",
+    };
+  } else {
+    health.dependencies.environment = {
+      status: "unhealthy",
+      message: `Missing env vars: ${missingEnvVars.join(", ")}`,
+    };
+    overallStatus = 503;
+  }
+
+  if (overallStatus !== 200) {
+    health.status = "unhealthy";
+  }
+
+  res.status(overallStatus).json(health);
+});
 
 /**
  * @swagger
@@ -29,7 +131,7 @@ const router = Router()
  *       404:
  *         description: Nenhum usuário encontrado
  */
-router.get('/user', userController.find.bind(userController))
+router.get("/user", userController.find.bind(userController));
 
 /**
  * @swagger
@@ -56,7 +158,7 @@ router.get('/user', userController.find.bind(userController))
  *       400:
  *         description: Dados inválidos
  */
-router.post('/user', userController.create.bind(userController))
+router.post("/user", userController.create.bind(userController));
 
 /**
  * @swagger
@@ -88,6 +190,6 @@ router.post('/user', userController.create.bind(userController))
  *       401:
  *         description: Credenciais inválidas
  */
-router.post('/user/auth', userController.auth.bind(userController))
+router.post("/user/auth", userController.auth.bind(userController));
 
-module.exports = router
+module.exports = router;

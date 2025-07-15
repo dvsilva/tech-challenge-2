@@ -150,10 +150,10 @@ resource "aws_iam_access_key" "ecr_user_key" {
   user = aws_iam_user.ecr_user.name
 }
 
-# IAM Policy for ECR Access
+# IAM Policy for ECR and ECS Access
 resource "aws_iam_policy" "ecr_policy" {
-  name        = "${var.bucket_name}-ecr-policy"
-  description = "Policy for ECR access in Tech Challenge 2"
+  name        = "${var.bucket_name}-ecr-ecs-policy"
+  description = "Policy for ECR and ECS access in Tech Challenge 2"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -173,6 +173,18 @@ resource "aws_iam_policy" "ecr_policy" {
           "ecr:ListImages",
           "ecr:DescribeImages",
           "ecr:DescribeRepositories"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "AllowECSAccess"
+        Effect = "Allow"
+        Action = [
+          "ecs:UpdateService",
+          "ecs:DescribeServices",
+          "ecs:DescribeClusters",
+          "ecs:DescribeTaskDefinition",
+          "ecs:RegisterTaskDefinition"
         ]
         Resource = "*"
       }

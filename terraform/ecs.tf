@@ -90,9 +90,15 @@ resource "aws_lb_target_group" "app" {
   target_type = "ip"
 
   health_check {
-    path                = "/docs"
+    enabled             = true
     healthy_threshold   = 2
     unhealthy_threshold = 3
+    timeout             = 5
+    interval            = 30
+    path                = "/health"
+    matcher             = "200"
+    protocol            = "HTTP"
+    port                = "traffic-port"
   }
 
   tags = {
@@ -387,6 +393,9 @@ resource "aws_ecs_service" "app" {
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = var.desired_count
   launch_type     = "FARGATE"
+
+  # Give ECS time to start up before registering with load balancer
+  health_check_grace_period_seconds = 300
 
   network_configuration {
     security_groups  = [aws_security_group.ecs.id]
