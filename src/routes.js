@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const AccountController = require("./controller/Account");
 const S3Controller = require("./controller/S3");
+const DatabaseController = require("./controller/Database");
 const accountController = new AccountController({});
 const s3Controller = new S3Controller();
 const router = Router();
@@ -225,5 +226,79 @@ router.get(
  *         description: Falha na conexão com S3
  */
 router.get("/s3/health", s3Controller.healthCheck.bind(s3Controller));
+
+/**
+ * @swagger
+ * /database/initialize:
+ *   post:
+ *     summary: Inicializa o banco de dados com dados do db.json
+ *     tags: [Database]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               forceReset:
+ *                 type: boolean
+ *                 description: Se true, limpa dados existentes antes de inicializar
+ *                 default: false
+ *     responses:
+ *       200:
+ *         description: Banco de dados inicializado com sucesso
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.post("/database/initialize", DatabaseController.initializeDatabase);
+
+/**
+ * @swagger
+ * /database/stats:
+ *   get:
+ *     summary: Obtém estatísticas do banco de dados
+ *     tags: [Database]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estatísticas obtidas com sucesso
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get("/database/stats", DatabaseController.getDatabaseStats);
+
+/**
+ * @swagger
+ * /database/status:
+ *   get:
+ *     summary: Verifica se o banco foi inicializado
+ *     tags: [Database]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Status obtido com sucesso
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get("/database/status", DatabaseController.getDatabaseStatus);
+
+/**
+ * @swagger
+ * /database/clear:
+ *   delete:
+ *     summary: Limpa todos os dados do banco
+ *     tags: [Database]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Banco de dados limpo com sucesso
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.delete("/database/clear", DatabaseController.clearDatabase);
 
 module.exports = router;

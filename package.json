@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "cross-env NODE_ENV=production node src/index.js",
-    "dev": "cross-env NODE_ENV=development nodemon src/index.js"
+    "dev": "cross-env NODE_ENV=development nodemon src/index.js",
+    "init-db": "cross-env NODE_ENV=production node scripts/initDb.js",
+    "init-db:force": "cross-env NODE_ENV=production  node scripts/initDb.js --force",
+    "db:stats": "cross-env NODE_ENV=production node scripts/initDb.js --stats"
   },
   "author": "",
   "license": "ISC",

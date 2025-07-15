@@ -5,6 +5,7 @@ const Express = require("express");
 const publicRoutes = require("./publicRoutes");
 const routes = require("./routes");
 const connectDB = require("./infra/mongoose/mongooseConect");
+const autoInitializeDatabase = require("./middleware/autoInitDb");
 const app = new Express();
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocs = require("./swagger");
@@ -73,7 +74,10 @@ app.use((req, res, next) => {
 app.use(routes);
 
 connectDB()
-  .then(() => {
+  .then(async () => {
+    // Auto-inicialização do banco de dados (se habilitada)
+    // await autoInitializeDatabase();
+
     const port = process.env.PORT || 3000;
     app.listen(port, () => {
       console.log(`Servidor rodando na porta ${port}`);
