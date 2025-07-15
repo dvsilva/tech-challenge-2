@@ -49,7 +49,23 @@ const options = {
         url: "http://localhost:3000",
         description: "Servidor de Desenvolvimento",
       },
-    ],
+      ...(process.env.ALB_URL
+        ? [
+            {
+              url: process.env.ALB_URL,
+              description: "Servidor AWS (HTTP)",
+            },
+          ]
+        : []),
+      ...(process.env.ALB_HTTPS_URL
+        ? [
+            {
+              url: process.env.ALB_HTTPS_URL,
+              description: "Servidor AWS (HTTPS)",
+            },
+          ]
+        : []),
+    ].filter(Boolean),
   },
   apis: ["./src/routes.js", "./src/publicRoutes.js"], // arquivos que contêm anotações do swagger
 };

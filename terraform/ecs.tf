@@ -31,6 +31,13 @@ resource "aws_security_group" "alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -345,7 +352,18 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name  = "CORS_ORIGIN"
-          value = join(",", var.cors_origins)
+          value = join(",", concat(var.cors_origins, [
+            "http://${var.alb_dns_name}",
+            "https://${var.alb_dns_name}"
+          ]))
+        },
+        {
+          name  = "ALB_URL"
+          value = "http://${var.alb_dns_name}"
+        },
+        {
+          name  = "ALB_HTTPS_URL"  
+          value = "https://${var.alb_dns_name}"
         }
       ]
 

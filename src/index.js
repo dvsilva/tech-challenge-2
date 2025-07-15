@@ -17,18 +17,48 @@ app.use(Express.json());
 const corsOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",")
   : "*";
+
 app.use(
   cors({
-    origin: corsOrigins,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      // If corsOrigins is "*", allow all origins
+      if (corsOrigins === "*" || corsOrigins.includes("*")) {
+        return callback(null, true);
+      }
+
+      // Check if the origin is in our allowed list
+      if (corsOrigins.indexOf(origin) !== -1) {
+        return callback(null, true);
+      }
+
+      // Log the denied origin for debugging
+      console.log(`CORS blocked origin: ${origin}`);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+    ],
+    exposedHeaders: ["Content-Length", "X-Foo", "X-Bar"],
     preflightContinue: false,
     optionsSuccessStatus: 200,
   })
 );
 
 app.use(publicRoutes);
+
+// Handle CORS preflight for Swagger
+app.options("/health/detailed", cors());
+app.options("/health", cors());
+
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use((req, res, next) => {
   if (req.url.includes("/docs")) {
