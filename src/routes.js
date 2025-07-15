@@ -10,13 +10,83 @@ const router = Router();
  * @swagger
  * /account:
  *   get:
- *     summary: Busca contas
+ *     summary: Busca contas do usuário autenticado
  *     tags: [Contas]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de contas encontradas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Conta encontrada carregado com sucesso"
+ *                 result:
+ *                   type: object
+ *                   properties:
+ *                     account:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                           userId:
+ *                             type: string
+ *                             example: "60f7b1b9b3f4b3b9b3f4b3b8"
+ *                           balance:
+ *                             type: number
+ *                             example: 1500.75
+ *                           accountNumber:
+ *                             type: string
+ *                             example: "12345-6"
+ *                     transactions:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "60f7b1b9b3f4b3b9b3f4b3ba"
+ *                           accountId:
+ *                             type: string
+ *                             example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                           value:
+ *                             type: number
+ *                             example: 150.50
+ *                           type:
+ *                             type: string
+ *                             example: "transferencia"
+ *                           date:
+ *                             type: string
+ *                             format: date-time
+ *                             example: "2023-07-15T10:30:00.000Z"
+ *                     cards:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "60f7b1b9b3f4b3b9b3f4b3bb"
+ *                           accountId:
+ *                             type: string
+ *                             example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                           cardNumber:
+ *                             type: string
+ *                             example: "****-****-****-1234"
+ *                           cardType:
+ *                             type: string
+ *                             example: "debito"
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
  */
 router.get("/account", accountController.find.bind(accountController));
 
@@ -28,9 +98,86 @@ router.get("/account", accountController.find.bind(accountController));
  *     tags: [Transações]
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - accountId
+ *               - value
+ *               - type
+ *               - from
+ *               - to
+ *             properties:
+ *               accountId:
+ *                 type: string
+ *                 description: ID da conta
+ *                 example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *               value:
+ *                 type: number
+ *                 description: Valor da transação
+ *                 example: 150.50
+ *               type:
+ *                 type: string
+ *                 description: Tipo da transação
+ *                 enum: [deposito, saque, transferencia]
+ *                 example: "transferencia"
+ *               from:
+ *                 type: string
+ *                 description: Origem da transação
+ *                 example: "Conta Corrente"
+ *               to:
+ *                 type: string
+ *                 description: Destino da transação
+ *                 example: "João Silva"
+ *               anexo:
+ *                 type: string
+ *                 description: URL do anexo (opcional)
+ *                 example: "https://bucket.s3.amazonaws.com/anexo.pdf"
  *     responses:
  *       201:
  *         description: Transação criada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Transação criada com sucesso"
+ *                 result:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                     accountId:
+ *                       type: string
+ *                       example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                     value:
+ *                       type: number
+ *                       example: 150.50
+ *                     type:
+ *                       type: string
+ *                       example: "transferencia"
+ *                     from:
+ *                       type: string
+ *                       example: "Conta Corrente"
+ *                     to:
+ *                       type: string
+ *                       example: "João Silva"
+ *                     date:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-07-15T10:30:00.000Z"
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
  */
 router.post(
   "/account/transaction",
@@ -52,11 +199,78 @@ router.post(
  *         description: ID da conta
  *         schema:
  *           type: string
+ *           example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data inicial para filtrar transações (YYYY-MM-DD)
+ *         example: "2023-01-01"
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data final para filtrar transações (YYYY-MM-DD)
+ *         example: "2023-12-31"
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [deposito, saque, transferencia]
+ *         description: Filtrar por tipo de transação
+ *         example: "transferencia"
  *     responses:
  *       200:
  *         description: Extrato encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Extrato obtido com sucesso"
+ *                 result:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         example: "60f7b1b9b3f4b3b9b3f4b3ba"
+ *                       accountId:
+ *                         type: string
+ *                         example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                       value:
+ *                         type: number
+ *                         example: 150.50
+ *                       type:
+ *                         type: string
+ *                         example: "transferencia"
+ *                       from:
+ *                         type: string
+ *                         example: "Conta Corrente"
+ *                       to:
+ *                         type: string
+ *                         example: "João Silva"
+ *                       date:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2023-07-15T10:30:00.000Z"
+ *                       anexo:
+ *                         type: string
+ *                         description: URL do anexo se houver
+ *                         example: "https://bucket.s3.amazonaws.com/anexo.pdf"
+ *       400:
+ *         description: ID da conta inválido
  *       401:
- *         description: Token invalido
+ *         description: Token inválido
+ *       404:
+ *         description: Conta não encontrada
+ *       500:
+ *         description: Erro interno do servidor
  */
 router.get(
   "/account/:accountId/statement",
@@ -102,10 +316,41 @@ router.get(
  *     responses:
  *       200:
  *         description: URL assinada gerada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 signedUrl:
+ *                   type: string
+ *                   example: "https://3frnt-group6-bytebank.s3.amazonaws.com/uploads/1642678800000_abc123_document.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=..."
+ *                 key:
+ *                   type: string
+ *                   example: "uploads/1642678800000_abc123_document.pdf"
+ *                 expiresIn:
+ *                   type: number
+ *                   description: Tempo de expiração em segundos
+ *                   example: 3600
  *       400:
  *         description: Dados inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Parâmetros obrigatórios ausentes"
  *       401:
  *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
  */
 router.post(
   "/s3/signed-url",
@@ -139,10 +384,39 @@ router.post(
  *     responses:
  *       200:
  *         description: Arquivo deletado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Arquivo deletado com sucesso"
+ *                 deletedKey:
+ *                   type: string
+ *                   example: "uploads/1642678800000_abc123_document.pdf"
  *       400:
  *         description: Dados inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Bucket e key são obrigatórios"
  *       401:
  *         description: Token inválido
+ *       404:
+ *         description: Arquivo não encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
 router.delete("/s3/file", s3Controller.deleteFile.bind(s3Controller));
 
@@ -170,11 +444,46 @@ router.delete("/s3/file", s3Controller.deleteFile.bind(s3Controller));
  *         schema:
  *           type: integer
  *         description: Número máximo de arquivos a retornar
+ *         example: 100
  *     responses:
  *       200:
  *         description: Lista de arquivos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 files:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       key:
+ *                         type: string
+ *                         example: "uploads/1642678800000_abc123_document.pdf"
+ *                       size:
+ *                         type: number
+ *                         example: 2048576
+ *                       lastModified:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2023-07-15T10:30:00.000Z"
+ *                       etag:
+ *                         type: string
+ *                         example: "\"d41d8cd98f00b204e9800998ecf8427e\""
+ *                 totalCount:
+ *                   type: number
+ *                   example: 25
+ *                 isTruncated:
+ *                   type: boolean
+ *                   example: false
  *       401:
  *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
  */
 router.get("/s3/files", s3Controller.listFiles.bind(s3Controller));
 
@@ -198,13 +507,48 @@ router.get("/s3/files", s3Controller.listFiles.bind(s3Controller));
  *         schema:
  *           type: string
  *         description: Chave do arquivo
+ *         example: "uploads/1642678800000_abc123_document.pdf"
  *     responses:
  *       200:
  *         description: Metadados do arquivo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 metadata:
+ *                   type: object
+ *                   properties:
+ *                     key:
+ *                       type: string
+ *                       example: "uploads/1642678800000_abc123_document.pdf"
+ *                     size:
+ *                       type: number
+ *                       example: 2048576
+ *                     lastModified:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-07-15T10:30:00.000Z"
+ *                     contentType:
+ *                       type: string
+ *                       example: "application/pdf"
+ *                     etag:
+ *                       type: string
+ *                       example: "\"d41d8cd98f00b204e9800998ecf8427e\""
+ *                     storageClass:
+ *                       type: string
+ *                       example: "STANDARD"
+ *       400:
+ *         description: Parâmetros inválidos
  *       404:
  *         description: Arquivo não encontrado
  *       401:
  *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
  */
 router.get(
   "/s3/file/metadata",
@@ -222,8 +566,36 @@ router.get(
  *     responses:
  *       200:
  *         description: Conexão S3 está funcionando
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Conexão S3 funcionando corretamente"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2023-07-15T10:30:00.000Z"
+ *       401:
+ *         description: Token inválido
  *       500:
  *         description: Falha na conexão com S3
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Falha ao conectar com S3"
  */
 router.get("/s3/health", s3Controller.healthCheck.bind(s3Controller));
 
@@ -245,9 +617,40 @@ router.get("/s3/health", s3Controller.healthCheck.bind(s3Controller));
  *                 type: boolean
  *                 description: Se true, limpa dados existentes antes de inicializar
  *                 default: false
+ *                 example: false
  *     responses:
  *       200:
  *         description: Banco de dados inicializado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banco de dados inicializado com sucesso"
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     usersCreated:
+ *                       type: number
+ *                       example: 5
+ *                     accountsCreated:
+ *                       type: number
+ *                       example: 5
+ *                     transactionsCreated:
+ *                       type: number
+ *                       example: 15
+ *                     cardsCreated:
+ *                       type: number
+ *                       example: 8
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Token inválido
  *       500:
  *         description: Erro interno do servidor
  */
@@ -264,6 +667,34 @@ router.post("/database/initialize", DatabaseController.initializeDatabase);
  *     responses:
  *       200:
  *         description: Estatísticas obtidas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     totalUsers:
+ *                       type: number
+ *                       example: 25
+ *                     totalAccounts:
+ *                       type: number
+ *                       example: 30
+ *                     totalTransactions:
+ *                       type: number
+ *                       example: 150
+ *                     totalCards:
+ *                       type: number
+ *                       example: 45
+ *                     databaseSize:
+ *                       type: string
+ *                       example: "2.5 MB"
+ *       401:
+ *         description: Token inválido
  *       500:
  *         description: Erro interno do servidor
  */
@@ -280,6 +711,26 @@ router.get("/database/stats", DatabaseController.getDatabaseStats);
  *     responses:
  *       200:
  *         description: Status obtido com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 initialized:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banco de dados está inicializado"
+ *                 lastInitialized:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2023-07-15T10:30:00.000Z"
+ *       401:
+ *         description: Token inválido
  *       500:
  *         description: Erro interno do servidor
  */
@@ -296,9 +747,39 @@ router.get("/database/status", DatabaseController.getDatabaseStatus);
  *     responses:
  *       200:
  *         description: Banco de dados limpo com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Todos os dados foram removidos do banco"
+ *                 deletedCounts:
+ *                   type: object
+ *                   properties:
+ *                     users:
+ *                       type: number
+ *                       example: 25
+ *                     accounts:
+ *                       type: number
+ *                       example: 30
+ *                     transactions:
+ *                       type: number
+ *                       example: 150
+ *                     cards:
+ *                       type: number
+ *                       example: 45
+ *       401:
+ *         description: Token inválido
  *       500:
  *         description: Erro interno do servidor
  */
 router.delete("/database/clear", DatabaseController.clearDatabase);
+
+module.exports = router;
 
 module.exports = router;
