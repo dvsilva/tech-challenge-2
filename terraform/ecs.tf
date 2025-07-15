@@ -92,9 +92,9 @@ resource "aws_lb_target_group" "app" {
   health_check {
     enabled             = true
     healthy_threshold   = 2
-    unhealthy_threshold = 3
-    timeout             = 5
-    interval            = 30
+    unhealthy_threshold = 5
+    timeout             = 10
+    interval            = 15
     path                = "/health"
     matcher             = "200"
     protocol            = "HTTP"
@@ -395,7 +395,10 @@ resource "aws_ecs_service" "app" {
   launch_type     = "FARGATE"
 
   # Give ECS time to start up before registering with load balancer
-  health_check_grace_period_seconds = 300
+  health_check_grace_period_seconds = 600
+
+  deployment_maximum_percent         = 200
+  deployment_minimum_healthy_percent = 50
 
   network_configuration {
     security_groups  = [aws_security_group.ecs.id]

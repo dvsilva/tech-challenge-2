@@ -192,4 +192,38 @@ router.post("/user", userController.create.bind(userController));
  */
 router.post("/user/auth", userController.auth.bind(userController));
 
+/**
+ * @swagger
+ * /startup:
+ *   get:
+ *     summary: Container startup status
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Container startup information
+ */
+router.get("/startup", (req, res) => {
+  const startupInfo = {
+    status: "running",
+    timestamp: new Date().toISOString(),
+    service: "tech-challenge-2",
+    environment: process.env.NODE_ENV,
+    port: process.env.PORT,
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    envVars: {
+      NODE_ENV: !!process.env.NODE_ENV,
+      PORT: !!process.env.PORT,
+      MONGODB_URI: !!process.env.MONGODB_URI,
+      JWT_SECRET: !!process.env.JWT_SECRET,
+      AWS_ACCESS_KEY_ID: !!process.env.AWS_ACCESS_KEY_ID,
+      AWS_SECRET_ACCESS_KEY: !!process.env.AWS_SECRET_ACCESS_KEY,
+      AWS_REGION: !!process.env.AWS_REGION,
+      S3_BUCKET_NAME: !!process.env.S3_BUCKET_NAME,
+    },
+  };
+
+  res.status(200).json(startupInfo);
+});
+
 module.exports = router;

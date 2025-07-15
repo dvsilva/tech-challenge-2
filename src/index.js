@@ -42,13 +42,24 @@ app.use((req, res, next) => {
 });
 app.use(routes);
 
-connectDB().then(() => {
-  const port = process.env.PORT || 3000;
-  app.listen(port, () => {
-    console.log(`Servidor rodando na porta ${port}`);
-    console.log(`Ambiente: ${process.env.NODE_ENV}`);
-    console.log(`Swagger docs: http://localhost:${port}/docs`);
+connectDB()
+  .then(() => {
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+      console.log(`Servidor rodando na porta ${port}`);
+      console.log(`Ambiente: ${process.env.NODE_ENV}`);
+      console.log(`Swagger docs: http://localhost:${port}/docs`);
+      console.log(`Health check: http://localhost:${port}/health`);
+    });
+  })
+  .catch((error) => {
+    console.error("Erro ao conectar ao banco de dados:", error);
+    // Still start the server even if DB connection fails for health checks
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+      console.log(`Servidor iniciado na porta ${port} (sem DB)`);
+      console.log(`Health check: http://localhost:${port}/health`);
+    });
   });
-});
 
 module.exports = app;
