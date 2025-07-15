@@ -59,7 +59,7 @@ router.post(
  */
 router.get(
   "/account/:accountId/statement",
-  accountController.getStatment.bind(accountController)
+  accountController.getStatement.bind(accountController)
 );
 
 /**
@@ -98,7 +98,6 @@ router.get(
  *                 type: string
  *                 example: "document.pdf"
  *                 description: "Nome original do arquivo (opcional, usado para gerar nome único)"
- *                 example: "putObject"
  *     responses:
  *       200:
  *         description: URL assinada gerada com sucesso
