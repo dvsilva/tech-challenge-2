@@ -45,6 +45,32 @@ output "aws_secret_access_key" {
   sensitive   = true
 }
 
+# ==========================================
+# ECR USER OUTPUTS
+# ==========================================
+
+output "ecr_user_name" {
+  description = "Name of the IAM user for ECR access"
+  value       = aws_iam_user.ecr_user.name
+}
+
+output "ecr_user_arn" {
+  description = "ARN of the IAM user for ECR access"
+  value       = aws_iam_user.ecr_user.arn
+}
+
+output "ecr_aws_access_key_id" {
+  description = "AWS Access Key ID for the ECR user"
+  value       = aws_iam_access_key.ecr_user_key.id
+  sensitive   = true
+}
+
+output "ecr_aws_secret_access_key" {
+  description = "AWS Secret Access Key for the ECR user"
+  value       = aws_iam_access_key.ecr_user_key.secret
+  sensitive   = true
+}
+
 output "cors_configuration" {
   description = "CORS configuration applied to the bucket"
   value = {

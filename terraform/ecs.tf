@@ -216,10 +216,10 @@ resource "aws_iam_role" "ecs_task_role" {
   }
 }
 
-# Attach S3 policy to task role
-resource "aws_iam_role_policy_attachment" "ecs_task_s3_policy" {
+# Attach ECR policy to task role
+resource "aws_iam_role_policy_attachment" "ecs_task_ecr_policy" {
   role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_policy.s3_policy.arn
+  policy_arn = aws_iam_policy.ecr_policy.arn
 }
 
 # CloudWatch Log Group
@@ -270,6 +270,27 @@ resource "aws_ssm_parameter" "aws_secret_key" {
 
   tags = {
     Name = "${var.app_name}-aws-secret-key"
+  }
+}
+
+# ECR User SSM Parameters
+resource "aws_ssm_parameter" "ecr_aws_access_key" {
+  name  = "/${var.app_name}/${var.environment}/ecr-aws-access-key-id"
+  type  = "SecureString"
+  value = aws_iam_access_key.ecr_user_key.id
+
+  tags = {
+    Name = "${var.app_name}-ecr-aws-access-key"
+  }
+}
+
+resource "aws_ssm_parameter" "ecr_aws_secret_key" {
+  name  = "/${var.app_name}/${var.environment}/ecr-aws-secret-access-key"
+  type  = "SecureString"
+  value = aws_iam_access_key.ecr_user_key.secret
+
+  tags = {
+    Name = "${var.app_name}-ecr-aws-secret-key"
   }
 }
 

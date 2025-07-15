@@ -129,6 +129,63 @@ resource "aws_iam_user_policy_attachment" "s3_user_policy_attachment" {
   policy_arn = aws_iam_policy.s3_policy.arn
 }
 
+# ==========================================
+# ECR USER AND PERMISSIONS
+# ==========================================
+
+# IAM User for ECR Access
+resource "aws_iam_user" "ecr_user" {
+  name = "${var.bucket_name}-ecr-user"
+  path = "/"
+
+  tags = {
+    Name        = "ECR User for Tech Challenge 2"
+    Environment = var.environment
+    Project     = "FIAP-3FRNT-Tech-Challenge-2"
+  }
+}
+
+# IAM Access Key for ECR User
+resource "aws_iam_access_key" "ecr_user_key" {
+  user = aws_iam_user.ecr_user.name
+}
+
+# IAM Policy for ECR Access
+resource "aws_iam_policy" "ecr_policy" {
+  name        = "${var.bucket_name}-ecr-policy"
+  description = "Policy for ECR access in Tech Challenge 2"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowECRAccess"
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload",
+          "ecr:PutImage",
+          "ecr:ListImages",
+          "ecr:DescribeImages",
+          "ecr:DescribeRepositories"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach ECR Policy to ECR User
+resource "aws_iam_user_policy_attachment" "ecr_user_policy_attachment" {
+  user       = aws_iam_user.ecr_user.name
+  policy_arn = aws_iam_policy.ecr_policy.arn
+}
+
 # S3 Bucket Lifecycle Configuration
 resource "aws_s3_bucket_lifecycle_configuration" "tech_challenge_lifecycle" {
   bucket = aws_s3_bucket.tech_challenge_bucket.id
