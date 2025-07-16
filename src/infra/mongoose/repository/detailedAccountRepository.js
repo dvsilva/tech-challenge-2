@@ -18,6 +18,10 @@ const getWithFiltersAndPagination = async ({
   startDate,
   endDate,
   type,
+  from,
+  to,
+  description,
+  anexo,
   page = 1,
   limit = 10,
   sortBy = "date",
@@ -36,6 +40,26 @@ const getWithFiltersAndPagination = async ({
   // Aplicar filtro de tipo
   if (type) {
     searchFilter.type = type;
+  }
+
+  // Aplicar filtro de origem (from) - busca parcial case-insensitive
+  if (from) {
+    searchFilter.from = { $regex: from, $options: "i" };
+  }
+
+  // Aplicar filtro de destino (to) - busca parcial case-insensitive
+  if (to) {
+    searchFilter.to = { $regex: to, $options: "i" };
+  }
+
+  // Aplicar filtro de descrição - busca parcial case-insensitive
+  if (description) {
+    searchFilter.description = { $regex: description, $options: "i" };
+  }
+
+  // Aplicar filtro de anexo - busca parcial case-insensitive
+  if (anexo) {
+    searchFilter.anexo = { $regex: anexo, $options: "i" };
   }
 
   // Calcular paginação

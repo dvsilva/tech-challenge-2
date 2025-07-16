@@ -5,7 +5,7 @@ const options = {
     openapi: "3.0.0",
     info: {
       title: "API de Contas",
-      version: "1.0.5",
+      version: "1.0.6",
       description: "Documentação da API de Contas",
     },
     tags: [

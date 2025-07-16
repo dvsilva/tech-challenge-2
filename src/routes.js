@@ -372,6 +372,30 @@ router.delete(
  *         description: Filtrar por tipo de transação
  *         example: "transferencia"
  *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *         description: Filtrar por origem da transação (busca parcial)
+ *         example: "João"
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *         description: Filtrar por destino da transação (busca parcial)
+ *         example: "Maria"
+ *       - in: query
+ *         name: description
+ *         schema:
+ *           type: string
+ *         description: Filtrar por descrição da transação (busca parcial)
+ *         example: "pagamento"
+ *       - in: query
+ *         name: anexo
+ *         schema:
+ *           type: string
+ *         description: Filtrar por anexo da transação (busca parcial)
+ *         example: "comprovante"
+ *       - in: query
  *         name: page
  *         schema:
  *           type: integer
@@ -392,7 +416,7 @@ router.delete(
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [date, value, type]
+ *           enum: [date, value, type, from, to, description]
  *           default: "date"
  *         description: Campo para ordenação
  *         example: "date"
