@@ -2,7 +2,7 @@ class DetailedAccount {
   constructor({
     _id,
     type,
-    value,
+    amount,
     from,
     to,
     date,
@@ -13,7 +13,7 @@ class DetailedAccount {
     this.id = _id;
     this.accountId = accountId;
     this.type = type;
-    this.value = value;
+    this.amount = amount;
     this.from = from;
     this.to = to;
     this.date = date;

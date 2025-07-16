@@ -45,7 +45,7 @@ class DataInitializerService {
     return transactions
       .map((transaction) => ({
         type: transaction.type,
-        value: transaction.amount,
+        amount: transaction.amount,
         date: new Date(transaction.date),
         from: transaction.description || "Sistema",
         to: transaction.description || "Sistema",

@@ -109,7 +109,7 @@ router.get("/account", accountController.find.bind(accountController));
  *             type: object
  *             required:
  *               - accountId
- *               - value
+ *               - amount
  *               - type
  *               - from
  *               - to
@@ -118,7 +118,7 @@ router.get("/account", accountController.find.bind(accountController));
  *                 type: string
  *                 description: ID da conta
  *                 example: "60f7b1b9b3f4b3b9b3f4b3b9"
- *               value:
+ *               amount:
  *                 type: number
  *                 description: Valor da transação
  *                 example: 150.50
@@ -163,7 +163,7 @@ router.get("/account", accountController.find.bind(accountController));
  *                     accountId:
  *                       type: string
  *                       example: "60f7b1b9b3f4b3b9b3f4b3b9"
- *                     value:
+ *                     amount:
  *                       type: number
  *                       example: 150.50
  *                     type:
@@ -217,7 +217,7 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               value:
+ *               amount:
  *                 type: number
  *                 example: 150.75
  *                 description: Valor da transação
@@ -262,7 +262,7 @@ router.post(
  *                     accountId:
  *                       type: string
  *                       example: "60f7b1b9b3f4b3b9b3f4b3b8"
- *                     value:
+ *                     amount:
  *                       type: number
  *                       example: 150.75
  *                     type:
@@ -430,7 +430,7 @@ router.delete(
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [date, value, type, from, to, description]
+ *           enum: [date, amount, type, from, to, description]
  *           default: "date"
  *         description: Campo para ordenação
  *         example: "date"
@@ -467,7 +467,7 @@ router.delete(
  *                           accountId:
  *                             type: string
  *                             example: "60f7b1b9b3f4b3b9b3f4b3b9"
- *                           value:
+ *                           amount:
  *                             type: number
  *                             example: 150.50
  *                           type:
@@ -1029,6 +1029,370 @@ router.get("/database/status", DatabaseController.getDatabaseStatus);
  */
 router.delete("/database/clear", DatabaseController.clearDatabase);
 
-module.exports = router;
+// Card CRUD Routes
+
+/**
+ * @swagger
+ * /cards:
+ *   post:
+ *     summary: Cria um novo cartão
+ *     tags: [Cartões]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - accountId
+ *               - type
+ *               - number
+ *               - dueDate
+ *               - functions
+ *               - cvc
+ *               - name
+ *             properties:
+ *               accountId:
+ *                 type: string
+ *                 description: ID da conta
+ *                 example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *               type:
+ *                 type: string
+ *                 description: Tipo do cartão
+ *                 enum: [credit, debit, both]
+ *                 example: "credit"
+ *               number:
+ *                 type: string
+ *                 description: Número do cartão
+ *                 example: "1234567890123456"
+ *               dueDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Data de vencimento
+ *                 example: "2025-12-31"
+ *               functions:
+ *                 type: string
+ *                 description: Funções do cartão
+ *                 example: "credit,debit,withdraw"
+ *               cvc:
+ *                 type: string
+ *                 description: Código de segurança
+ *                 example: "123"
+ *               paymentDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Data de pagamento (opcional)
+ *                 example: "2025-01-15"
+ *               name:
+ *                 type: string
+ *                 description: Nome do portador
+ *                 example: "João Silva"
+ *     responses:
+ *       201:
+ *         description: Cartão criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cartão criado com sucesso"
+ *                 result:
+ *                   $ref: '#/components/schemas/Card'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.post("/cards", accountController.createCard.bind(accountController));
+
+/**
+ * @swagger
+ * /cards:
+ *   get:
+ *     summary: Lista todos os cartões ou filtra por conta
+ *     tags: [Cartões]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: accountId
+ *         schema:
+ *           type: string
+ *         description: ID da conta para filtrar cartões
+ *         example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *     responses:
+ *       200:
+ *         description: Cartões encontrados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cartões encontrados com sucesso"
+ *                 result:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Card'
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get("/cards", accountController.getAllCards.bind(accountController));
+
+/**
+ * @swagger
+ * /cards/{cardId}:
+ *   get:
+ *     summary: Busca um cartão específico por ID
+ *     tags: [Cartões]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cardId
+ *         required: true
+ *         description: ID do cartão
+ *         schema:
+ *           type: string
+ *           example: "60f7b1b9b3f4b3b9b3f4b3ba"
+ *     responses:
+ *       200:
+ *         description: Cartão encontrado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cartão encontrado com sucesso"
+ *                 result:
+ *                   $ref: '#/components/schemas/Card'
+ *       401:
+ *         description: Token inválido
+ *       404:
+ *         description: Cartão não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get(
+  "/cards/:cardId",
+  accountController.getCardById.bind(accountController)
+);
+
+/**
+ * @swagger
+ * /cards/{cardId}:
+ *   put:
+ *     summary: Atualiza um cartão existente
+ *     tags: [Cartões]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cardId
+ *         required: true
+ *         description: ID do cartão a ser atualizado
+ *         schema:
+ *           type: string
+ *           example: "60f7b1b9b3f4b3b9b3f4b3ba"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [credit, debit, both]
+ *                 example: "credit"
+ *               is_blocked:
+ *                 type: boolean
+ *                 example: false
+ *               dueDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-12-31"
+ *               functions:
+ *                 type: string
+ *                 example: "credit,debit,withdraw"
+ *               paymentDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-01-15"
+ *               name:
+ *                 type: string
+ *                 example: "João Silva"
+ *     responses:
+ *       200:
+ *         description: Cartão atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cartão atualizado com sucesso"
+ *                 result:
+ *                   $ref: '#/components/schemas/Card'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Token inválido
+ *       404:
+ *         description: Cartão não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.put(
+  "/cards/:cardId",
+  accountController.updateCard.bind(accountController)
+);
+
+/**
+ * @swagger
+ * /cards/{cardId}:
+ *   delete:
+ *     summary: Exclui um cartão existente
+ *     tags: [Cartões]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cardId
+ *         required: true
+ *         description: ID do cartão a ser excluído
+ *         schema:
+ *           type: string
+ *           example: "60f7b1b9b3f4b3b9b3f4b3ba"
+ *     responses:
+ *       200:
+ *         description: Cartão excluído com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cartão excluído com sucesso"
+ *       401:
+ *         description: Token inválido
+ *       404:
+ *         description: Cartão não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.delete(
+  "/cards/:cardId",
+  accountController.deleteCard.bind(accountController)
+);
+
+/**
+ * @swagger
+ * /cards/{cardId}/toggle-block:
+ *   patch:
+ *     summary: Bloqueia ou desbloqueia um cartão
+ *     tags: [Cartões]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cardId
+ *         required: true
+ *         description: ID do cartão
+ *         schema:
+ *           type: string
+ *           example: "60f7b1b9b3f4b3b9b3f4b3ba"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - is_blocked
+ *             properties:
+ *               is_blocked:
+ *                 type: boolean
+ *                 description: Status de bloqueio do cartão
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Status do cartão alterado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cartão bloqueado com sucesso"
+ *                 result:
+ *                   $ref: '#/components/schemas/Card'
+ *       401:
+ *         description: Token inválido
+ *       404:
+ *         description: Cartão não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.patch(
+  "/cards/:cardId/toggle-block",
+  accountController.toggleCardBlock.bind(accountController)
+);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Card:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           example: "60f7b1b9b3f4b3b9b3f4b3ba"
+ *         accountId:
+ *           type: string
+ *           example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *         type:
+ *           type: string
+ *           enum: [credit, debit, both]
+ *           example: "credit"
+ *         is_blocked:
+ *           type: boolean
+ *           example: false
+ *         number:
+ *           type: string
+ *           example: "1234567890123456"
+ *         dueDate:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-12-31T00:00:00.000Z"
+ *         functions:
+ *           type: string
+ *           example: "credit,debit,withdraw"
+ *         cvc:
+ *           type: string
+ *           example: "123"
+ *         paymentDate:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-01-15T00:00:00.000Z"
+ *         name:
+ *           type: string
+ *           example: "João Silva"
+ */
 
 module.exports = router;

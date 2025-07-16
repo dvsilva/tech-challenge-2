@@ -66,12 +66,12 @@ const getWithFiltersAndPagination = async ({
 
   // Aplicar filtro de faixa de valores
   if (minValue !== undefined || maxValue !== undefined) {
-    searchFilter.value = {};
+    searchFilter.amount = {};
     if (minValue !== undefined) {
-      searchFilter.value.$gte = parseFloat(minValue);
+      searchFilter.amount.$gte = parseFloat(minValue);
     }
     if (maxValue !== undefined) {
-      searchFilter.value.$lte = parseFloat(maxValue);
+      searchFilter.amount.$lte = parseFloat(maxValue);
     }
   }
 

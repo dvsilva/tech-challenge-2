@@ -69,7 +69,7 @@ const DetailedAccountSchema = new Schema(
       type: String,
       required: true,
     },
-    value: {
+    amount: {
       type: Number,
       required: true,
     },

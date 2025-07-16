@@ -10,6 +10,10 @@ class AccountController {
         transactionRepository: require("../infra/mongoose/repository/detailedAccountRepository"),
 
         saveCard: require("../feature/Card/saveCard"),
+        getCard: require("../feature/Card/getCard"),
+        getCardById: require("../feature/Card/getCardById"),
+        updateCard: require("../feature/Card/updateCard"),
+        deleteCard: require("../feature/Card/deleteCard"),
         salvarUsuario: require("../feature/User/salvarUsuario"),
         saveAccount: require("../feature/Account/saveAccount"),
         getUser: require("../feature/User/getUser"),
@@ -19,7 +23,6 @@ class AccountController {
         getTransactionWithFilters: require("../feature/Transaction/getTransactionWithFilters"),
         updateTransaction: require("../feature/Transaction/updateTransaction"),
         deleteTransaction: require("../feature/Transaction/deleteTransaction"),
-        getCard: require("../feature/Card/getCard"),
       },
       di
     );
@@ -67,10 +70,10 @@ class AccountController {
 
   async createTransaction(req, res) {
     const { saveTransaction, transactionRepository } = this.di;
-    const { accountId, value, type, from, to, anexo, description } = req.body;
+    const { accountId, amount, type, from, to, anexo, description } = req.body;
     const transactionDTO = new TransactionDTO({
       accountId,
-      value,
+      amount,
       from,
       to,
       anexo,
@@ -201,6 +204,187 @@ class AccountController {
     } catch (error) {
       res.status(500).json({
         message: "Erro ao obter extrato",
+        error: error.message,
+      });
+    }
+  }
+
+  // CRUD Methods for Cards
+  async createCard(req, res) {
+    const { saveCard, cardRepository } = this.di;
+    const {
+      accountId,
+      type,
+      number,
+      dueDate,
+      functions,
+      cvc,
+      paymentDate,
+      name,
+    } = req.body;
+    const CardDTO = require("../models/Card");
+
+    const cardData = new CardDTO({
+      accountId,
+      type,
+      number,
+      dueDate: new Date(dueDate),
+      functions,
+      cvc,
+      paymentDate: paymentDate ? new Date(paymentDate) : null,
+      name,
+      is_blocked: false,
+    });
+
+    try {
+      const card = await saveCard({
+        card: cardData,
+        repository: cardRepository,
+      });
+
+      res.status(201).json({
+        message: "Cartão criado com sucesso",
+        result: card,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao criar cartão",
+        error: error.message,
+      });
+    }
+  }
+
+  async getCardById(req, res) {
+    const { getCardById, cardRepository } = this.di;
+    const { cardId } = req.params;
+
+    try {
+      const card = await getCardById({
+        cardId,
+        repository: cardRepository,
+      });
+
+      res.status(200).json({
+        message: "Cartão encontrado com sucesso",
+        result: card,
+      });
+    } catch (error) {
+      res.status(error.message === "Cartão não encontrado" ? 404 : 500).json({
+        message:
+          error.message === "Cartão não encontrado"
+            ? "Cartão não encontrado"
+            : "Erro ao buscar cartão",
+        error: error.message,
+      });
+    }
+  }
+
+  async getAllCards(req, res) {
+    const { getCard, cardRepository } = this.di;
+    const { accountId } = req.query;
+
+    try {
+      const filter = accountId ? { accountId } : {};
+      const cards = await getCard({
+        filter,
+        repository: cardRepository,
+      });
+
+      res.status(200).json({
+        message: "Cartões encontrados com sucesso",
+        result: cards,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao buscar cartões",
+        error: error.message,
+      });
+    }
+  }
+
+  async updateCard(req, res) {
+    const { updateCard, cardRepository } = this.di;
+    const { cardId } = req.params;
+    const updateData = req.body;
+
+    // Convert date strings to Date objects if present
+    if (updateData.dueDate) {
+      updateData.dueDate = new Date(updateData.dueDate);
+    }
+    if (updateData.paymentDate) {
+      updateData.paymentDate = new Date(updateData.paymentDate);
+    }
+
+    try {
+      const card = await updateCard({
+        cardId,
+        updateData,
+        repository: cardRepository,
+      });
+
+      res.status(200).json({
+        message: "Cartão atualizado com sucesso",
+        result: card,
+      });
+    } catch (error) {
+      res.status(error.message === "Cartão não encontrado" ? 404 : 500).json({
+        message:
+          error.message === "Cartão não encontrado"
+            ? "Cartão não encontrado"
+            : "Erro ao atualizar cartão",
+        error: error.message,
+      });
+    }
+  }
+
+  async deleteCard(req, res) {
+    const { deleteCard, cardRepository } = this.di;
+    const { cardId } = req.params;
+
+    try {
+      await deleteCard({
+        cardId,
+        repository: cardRepository,
+      });
+
+      res.status(200).json({
+        message: "Cartão excluído com sucesso",
+      });
+    } catch (error) {
+      res.status(error.message === "Cartão não encontrado" ? 404 : 500).json({
+        message:
+          error.message === "Cartão não encontrado"
+            ? "Cartão não encontrado"
+            : "Erro ao excluir cartão",
+        error: error.message,
+      });
+    }
+  }
+
+  async toggleCardBlock(req, res) {
+    const { updateCard, cardRepository } = this.di;
+    const { cardId } = req.params;
+    const { is_blocked } = req.body;
+
+    try {
+      const card = await updateCard({
+        cardId,
+        updateData: { is_blocked },
+        repository: cardRepository,
+      });
+
+      res.status(200).json({
+        message: `Cartão ${
+          is_blocked ? "bloqueado" : "desbloqueado"
+        } com sucesso`,
+        result: card,
+      });
+    } catch (error) {
+      res.status(error.message === "Cartão não encontrado" ? 404 : 500).json({
+        message:
+          error.message === "Cartão não encontrado"
+            ? "Cartão não encontrado"
+            : "Erro ao alterar status do cartão",
         error: error.message,
       });
     }

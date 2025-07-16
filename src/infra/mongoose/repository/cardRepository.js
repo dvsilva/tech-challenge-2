@@ -1,20 +1,30 @@
-const { Card } = require('../modelos');
+const { Card } = require("../modelos");
 
 const create = async (userData) => {
-    const card = new Card(userData);
-    return card.save();
+  const card = new Card(userData);
+  return card.save();
 };
 
 const getById = async (id) => {
   return Card.findById(id);
 };
 
-const get = async (card={}) => {
-    return Card.find(card);
+const get = async (card = {}) => {
+  return Card.find(card);
+};
+
+const update = async (id, updateData) => {
+  return Card.findByIdAndUpdate(id, updateData, { new: true });
+};
+
+const deleteById = async (id) => {
+  return Card.findByIdAndDelete(id);
 };
 
 module.exports = {
   create,
   getById,
-  get
+  get,
+  update,
+  deleteById,
 };
