@@ -396,6 +396,20 @@ router.delete(
  *         description: Filtrar por anexo da transação (busca parcial)
  *         example: "comprovante"
  *       - in: query
+ *         name: minValue
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Valor mínimo da transação
+ *         example: 100.00
+ *       - in: query
+ *         name: maxValue
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Valor máximo da transação
+ *         example: 1000.00
+ *       - in: query
  *         name: page
  *         schema:
  *           type: integer

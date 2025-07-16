@@ -10,7 +10,7 @@ const getById = async (id) => {
 };
 
 const get = async (detailedAccount = {}) => {
-  return DetailedAccount.find(detailedAccount);
+  return DetailedAccount.find(detailedAccount).sort({ date: -1 });
 };
 
 const getWithFiltersAndPagination = async ({
@@ -22,6 +22,8 @@ const getWithFiltersAndPagination = async ({
   to,
   description,
   anexo,
+  minValue,
+  maxValue,
   page = 1,
   limit = 10,
   sortBy = "date",
@@ -60,6 +62,17 @@ const getWithFiltersAndPagination = async ({
   // Aplicar filtro de anexo - busca parcial case-insensitive
   if (anexo) {
     searchFilter.anexo = { $regex: anexo, $options: "i" };
+  }
+
+  // Aplicar filtro de faixa de valores
+  if (minValue !== undefined || maxValue !== undefined) {
+    searchFilter.value = {};
+    if (minValue !== undefined) {
+      searchFilter.value.$gte = parseFloat(minValue);
+    }
+    if (maxValue !== undefined) {
+      searchFilter.value.$lte = parseFloat(maxValue);
+    }
   }
 
   // Calcular paginação
