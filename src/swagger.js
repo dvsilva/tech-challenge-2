@@ -5,7 +5,7 @@ const options = {
     openapi: "3.0.0",
     info: {
       title: "API de Contas",
-      version: "1.0.10",
+      version: "1.0.11",
       description: "Documentação da API de Contas",
     },
     tags: [
@@ -20,6 +20,11 @@ const options = {
       {
         name: "Extratos",
         description: "Operações relacionadas a extratos",
+      },
+      {
+        name: "Investimentos",
+        description:
+          "Operações relacionadas a investimentos - renda fixa e variável",
       },
       {
         name: "S3",

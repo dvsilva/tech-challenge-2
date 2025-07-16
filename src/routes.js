@@ -3,9 +3,11 @@ const AccountController = require("./controller/Account");
 const S3Controller = require("./controller/S3");
 const DatabaseController = require("./controller/Database");
 const UserController = require("./controller/User");
+const InvestmentController = require("./controller/Investment");
 const accountController = new AccountController({});
 const s3Controller = new S3Controller();
 const userController = new UserController({});
+const investmentController = new InvestmentController();
 const router = Router();
 
 /**
@@ -1742,6 +1744,631 @@ router.get(
 router.put(
   "/users/:id/settings",
   userController.updateSettings.bind(userController)
+);
+
+// ==================== INVESTMENT ROUTES ====================
+
+/**
+ * @swagger
+ * /investments/types:
+ *   get:
+ *     summary: Busca tipos e categorias de investimentos disponíveis
+ *     tags: [Investimentos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Tipos de investimento carregados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tipos de investimento carregados com sucesso"
+ *                 result:
+ *                   type: object
+ *                   properties:
+ *                     types:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           value:
+ *                             type: string
+ *                             example: "renda_fixa"
+ *                           label:
+ *                             type: string
+ *                             example: "Renda Fixa"
+ *                     categories:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           value:
+ *                             type: string
+ *                             example: "fundos_investimento"
+ *                           label:
+ *                             type: string
+ *                             example: "Fundos de Investimento"
+ *                     subtypes:
+ *                       type: object
+ *                     riskLevels:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           value:
+ *                             type: string
+ *                             example: "baixo"
+ *                           label:
+ *                             type: string
+ *                             example: "Baixo"
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get(
+  "/investments/types",
+  investmentController.getInvestmentTypes.bind(investmentController)
+);
+
+/**
+ * @swagger
+ * /investments:
+ *   get:
+ *     summary: Busca investimentos do usuário autenticado
+ *     tags: [Investimentos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [renda_fixa, renda_variavel]
+ *         description: Filtrar por tipo de investimento
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [fundos_investimento, previdencia_privada, bolsa_valores]
+ *         description: Filtrar por categoria de investimento
+ *     responses:
+ *       200:
+ *         description: Lista de investimentos encontrados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Investimentos encontrados com sucesso"
+ *                 result:
+ *                   type: object
+ *                   properties:
+ *                     investments:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                           type:
+ *                             type: string
+ *                             example: "renda_fixa"
+ *                           category:
+ *                             type: string
+ *                             example: "fundos_investimento"
+ *                           subtype:
+ *                             type: string
+ *                             example: "CDB"
+ *                           name:
+ *                             type: string
+ *                             example: "CDB Banco XYZ"
+ *                           value:
+ *                             type: number
+ *                             example: 10500.00
+ *                           initialValue:
+ *                             type: number
+ *                             example: 10000.00
+ *                           currentYield:
+ *                             type: number
+ *                             example: 5.2
+ *                           profit:
+ *                             type: number
+ *                             example: 500.00
+ *                           profitPercentage:
+ *                             type: number
+ *                             example: 5.00
+ *                           riskLevel:
+ *                             type: string
+ *                             example: "baixo"
+ *                           purchaseDate:
+ *                             type: string
+ *                             format: date-time
+ *                           maturityDate:
+ *                             type: string
+ *                             format: date-time
+ *                           isMatured:
+ *                             type: boolean
+ *                             example: false
+ *                     summary:
+ *                       type: object
+ *                       properties:
+ *                         totalValue:
+ *                           type: number
+ *                           example: 50000.00
+ *                         totalInitialValue:
+ *                           type: number
+ *                           example: 45000.00
+ *                         totalProfit:
+ *                           type: number
+ *                           example: 5000.00
+ *                         totalProfitPercentage:
+ *                           type: number
+ *                           example: 11.11
+ *                         totalInvestments:
+ *                           type: number
+ *                           example: 5
+ *                         byCategory:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                     count:
+ *                       type: number
+ *                       example: 5
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get(
+  "/investments",
+  investmentController.find.bind(investmentController)
+);
+
+/**
+ * @swagger
+ * /investments:
+ *   post:
+ *     summary: Cria um novo investimento
+ *     tags: [Investimentos]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *               - category
+ *               - subtype
+ *               - name
+ *               - initialValue
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [renda_fixa, renda_variavel]
+ *                 example: "renda_fixa"
+ *                 description: "Tipo do investimento"
+ *               category:
+ *                 type: string
+ *                 enum: [fundos_investimento, previdencia_privada, bolsa_valores]
+ *                 example: "fundos_investimento"
+ *                 description: "Categoria do investimento"
+ *               subtype:
+ *                 type: string
+ *                 example: "CDB"
+ *                 description: "Subtipo específico do investimento"
+ *               name:
+ *                 type: string
+ *                 example: "CDB Banco XYZ 120% CDI"
+ *                 description: "Nome do investimento"
+ *               initialValue:
+ *                 type: number
+ *                 example: 10000.00
+ *                 description: "Valor inicial investido"
+ *               currentYield:
+ *                 type: number
+ *                 example: 5.2
+ *                 description: "Rendimento atual em porcentagem"
+ *               maturityDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-12-31"
+ *                 description: "Data de vencimento (para renda fixa)"
+ *               riskLevel:
+ *                 type: string
+ *                 enum: [baixo, medio, alto]
+ *                 example: "baixo"
+ *                 description: "Nível de risco do investimento"
+ *               description:
+ *                 type: string
+ *                 example: "Investimento em CDB com liquidez diária"
+ *                 description: "Descrição adicional do investimento"
+ *     responses:
+ *       201:
+ *         description: Investimento criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Investimento criado com sucesso"
+ *                 result:
+ *                   type: object
+ *                   description: "Dados do investimento criado"
+ *       400:
+ *         description: Dados inválidos ou erro de validação
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.post(
+  "/investments",
+  investmentController.create.bind(investmentController)
+);
+
+/**
+ * @swagger
+ * /investments/{id}:
+ *   get:
+ *     summary: Busca um investimento específico por ID
+ *     tags: [Investimentos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do investimento
+ *     responses:
+ *       200:
+ *         description: Investimento encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Investimento encontrado com sucesso"
+ *                 result:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     type:
+ *                       type: string
+ *                     category:
+ *                       type: string
+ *                     subtype:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     value:
+ *                       type: number
+ *                     initialValue:
+ *                       type: number
+ *                     profit:
+ *                       type: number
+ *                     profitPercentage:
+ *                       type: number
+ *                     currentYield:
+ *                       type: number
+ *                     purchaseDate:
+ *                       type: string
+ *                       format: date-time
+ *                     maturityDate:
+ *                       type: string
+ *                       format: date-time
+ *                     riskLevel:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                     isMatured:
+ *                       type: boolean
+ *                     daysToMaturity:
+ *                       type: number
+ *                     investmentDays:
+ *                       type: number
+ *       404:
+ *         description: Investimento não encontrado
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get(
+  "/investments/:id",
+  investmentController.findById.bind(investmentController)
+);
+
+/**
+ * @swagger
+ * /investments/{id}:
+ *   put:
+ *     summary: Atualiza um investimento existente
+ *     tags: [Investimentos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do investimento
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               value:
+ *                 type: number
+ *                 example: 10500.00
+ *                 description: "Novo valor atual do investimento"
+ *               currentYield:
+ *                 type: number
+ *                 example: 5.5
+ *                 description: "Novo rendimento atual em porcentagem"
+ *               name:
+ *                 type: string
+ *                 example: "CDB Banco XYZ 125% CDI"
+ *                 description: "Novo nome do investimento"
+ *               maturityDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2026-01-31"
+ *                 description: "Nova data de vencimento"
+ *               riskLevel:
+ *                 type: string
+ *                 enum: [baixo, medio, alto]
+ *                 example: "medio"
+ *                 description: "Novo nível de risco"
+ *               description:
+ *                 type: string
+ *                 example: "Investimento com rendimento atualizado"
+ *                 description: "Nova descrição do investimento"
+ *     responses:
+ *       200:
+ *         description: Investimento atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Investimento atualizado com sucesso"
+ *                 result:
+ *                   type: object
+ *                   description: "Dados do investimento atualizado"
+ *       400:
+ *         description: Dados inválidos ou erro de validação
+ *       404:
+ *         description: Investimento não encontrado
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.put(
+  "/investments/:id",
+  investmentController.update.bind(investmentController)
+);
+
+/**
+ * @swagger
+ * /investments/{id}:
+ *   delete:
+ *     summary: Remove um investimento
+ *     tags: [Investimentos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do investimento
+ *     responses:
+ *       200:
+ *         description: Investimento removido com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Investimento removido com sucesso"
+ *                 result:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     value:
+ *                       type: number
+ *       400:
+ *         description: Erro na operação ou restrição de exclusão
+ *       404:
+ *         description: Investimento não encontrado
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.delete(
+  "/investments/:id",
+  investmentController.delete.bind(investmentController)
+);
+
+/**
+ * @swagger
+ * /investments/transfer:
+ *   post:
+ *     summary: Transfere dinheiro da conta para um investimento
+ *     tags: [Investimentos]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - investmentId
+ *               - amount
+ *             properties:
+ *               investmentId:
+ *                 type: string
+ *                 example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                 description: "ID do investimento de destino"
+ *               amount:
+ *                 type: number
+ *                 example: 1000.00
+ *                 description: "Valor a ser transferido"
+ *               description:
+ *                 type: string
+ *                 example: "Aporte adicional no CDB"
+ *                 description: "Descrição da transferência"
+ *     responses:
+ *       200:
+ *         description: Transferência realizada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Transferência para investimento realizada com sucesso"
+ *                 result:
+ *                   type: object
+ *                   properties:
+ *                     investment:
+ *                       type: object
+ *                       description: "Dados atualizados do investimento"
+ *                     transaction:
+ *                       type: object
+ *                       description: "Dados da transação criada"
+ *                     transferAmount:
+ *                       type: number
+ *                       example: 1000.00
+ *                     newInvestmentValue:
+ *                       type: number
+ *                       example: 11500.00
+ *       400:
+ *         description: Dados inválidos, saldo insuficiente ou erro de validação
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.post(
+  "/investments/transfer",
+  investmentController.transfer.bind(investmentController)
+);
+
+/**
+ * @swagger
+ * /investments/redeem:
+ *   post:
+ *     summary: Realiza resgate de um investimento (parcial ou total)
+ *     tags: [Investimentos]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - investmentId
+ *               - amount
+ *             properties:
+ *               investmentId:
+ *                 type: string
+ *                 example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                 description: "ID do investimento"
+ *               amount:
+ *                 type: number
+ *                 example: 5000.00
+ *                 description: "Valor a ser resgatado"
+ *               redeemType:
+ *                 type: string
+ *                 enum: [partial, total]
+ *                 example: "partial"
+ *                 description: "Tipo de resgate - parcial ou total"
+ *               description:
+ *                 type: string
+ *                 example: "Resgate parcial para emergência"
+ *                 description: "Descrição do resgate"
+ *     responses:
+ *       200:
+ *         description: Resgate realizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Resgate parcial realizado com sucesso"
+ *                 result:
+ *                   type: object
+ *                   properties:
+ *                     investment:
+ *                       type: object
+ *                       description: "Dados atualizados do investimento (se resgate parcial)"
+ *                     transaction:
+ *                       type: object
+ *                       description: "Dados da transação de resgate"
+ *                     redeemedAmount:
+ *                       type: number
+ *                       example: 5000.00
+ *                     redeemType:
+ *                       type: string
+ *                       example: "partial"
+ *                     investmentCompletelyRedeemed:
+ *                       type: boolean
+ *                       example: false
+ *                     newInvestmentValue:
+ *                       type: number
+ *                       example: 5500.00
+ *                     originalInvestmentValue:
+ *                       type: number
+ *                       example: 10500.00
+ *       400:
+ *         description: Dados inválidos, valor excede disponível ou erro de validação
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.post(
+  "/investments/redeem",
+  investmentController.redeem.bind(investmentController)
 );
 
 module.exports = router;
