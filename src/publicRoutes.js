@@ -108,7 +108,7 @@ router.get("/health/detailed", async (req, res) => {
 
 /**
  * @swagger
- * /user:
+ * /users:
  *   get:
  *     summary: Busca usuários
  *     tags: [Operações de Autenticação]
@@ -131,11 +131,11 @@ router.get("/health/detailed", async (req, res) => {
  *       404:
  *         description: Nenhum usuário encontrado
  */
-router.get("/user", userController.find.bind(userController));
+router.get("/users", userController.find.bind(userController));
 
 /**
  * @swagger
- * /user:
+ * /users:
  *   post:
  *     summary: Cria um novo usuário
  *     tags: [Operações de Autenticação]
@@ -169,11 +169,11 @@ router.get("/user", userController.find.bind(userController));
  *       400:
  *         description: Dados inválidos
  */
-router.post("/user", userController.create.bind(userController));
+router.post("/users", userController.create.bind(userController));
 
 /**
  * @swagger
- * /user/auth:
+ * /users/auth:
  *   post:
  *     summary: Autenticação de usuário
  *     tags: [Operações de Autenticação]
@@ -201,7 +201,7 @@ router.post("/user", userController.create.bind(userController));
  *       401:
  *         description: Credenciais inválidas
  */
-router.post("/user/auth", userController.auth.bind(userController));
+router.post("/users/auth", userController.auth.bind(userController));
 
 /**
  * @swagger

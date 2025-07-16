@@ -12,7 +12,7 @@ const router = Router();
 
 /**
  * @swagger
- * /account:
+ * /accounts:
  *   get:
  *     summary: Busca contas do usuário autenticado
  *     tags: [Contas]
@@ -95,11 +95,11 @@ const router = Router();
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/account", accountController.find.bind(accountController));
+router.get("/accounts", accountController.find.bind(accountController));
 
 /**
  * @swagger
- * /account/transaction:
+ * /accounts/transaction:
  *   post:
  *     summary: Cria uma nova transação
  *     tags: [Transações]
@@ -194,13 +194,13 @@ router.get("/account", accountController.find.bind(accountController));
  *         description: Erro interno do servidor
  */
 router.post(
-  "/account/transaction",
+  "/accounts/transaction",
   accountController.createTransaction.bind(accountController)
 );
 
 /**
  * @swagger
- * /account/transaction/{transactionId}:
+ * /accounts/transaction/{transactionId}:
  *   put:
  *     summary: Atualiza uma transação existente
  *     tags: [Transações]
@@ -295,13 +295,13 @@ router.post(
  *         description: Erro interno do servidor
  */
 router.put(
-  "/account/transaction/:transactionId",
+  "/accounts/transaction/:transactionId",
   accountController.updateTransaction.bind(accountController)
 );
 
 /**
  * @swagger
- * /account/transaction/{transactionId}:
+ * /accounts/transaction/{transactionId}:
  *   delete:
  *     summary: Exclui uma transação existente
  *     tags: [Transações]
@@ -334,13 +334,13 @@ router.put(
  *         description: Erro interno do servidor
  */
 router.delete(
-  "/account/transaction/:transactionId",
+  "/accounts/transaction/:transactionId",
   accountController.deleteTransaction.bind(accountController)
 );
 
 /**
  * @swagger
- * /account/{accountId}/statement:
+ * /accounts/{accountId}/statement:
  *   get:
  *     summary: Obtém extrato da conta
  *     tags: [Extratos]
@@ -526,7 +526,7 @@ router.delete(
  *         description: Erro interno do servidor
  */
 router.get(
-  "/account/:accountId/statement",
+  "/accounts/:accountId/statement",
   accountController.getStatement.bind(accountController)
 );
 

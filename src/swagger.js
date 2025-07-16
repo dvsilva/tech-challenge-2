@@ -5,10 +5,14 @@ const options = {
     openapi: "3.0.0",
     info: {
       title: "API de Contas",
-      version: "1.0.11",
+      version: "1.0.12",
       description: "Documentação da API de Contas",
     },
     tags: [
+      {
+        name: "Operações de Autenticação",
+        description: "Operações de autenticação e gerenciamento de usuários",
+      },
       {
         name: "Contas",
         description: "Operações relacionadas a contas",
@@ -27,16 +31,20 @@ const options = {
           "Operações relacionadas a investimentos - renda fixa e variável",
       },
       {
+        name: "Cartões",
+        description: "Operações relacionadas a cartões",
+      },
+      {
         name: "S3",
         description: "Operações relacionadas ao Amazon S3",
       },
       {
-        name: "Operações de Autenticação",
-        description: "Operações de autenticação e gerenciamento de usuários",
-      },
-      {
         name: "Health",
         description: "Verificações de saúde da aplicação",
+      },
+      {
+        name: "Database",
+        description: "Operações de banco de dados",
       },
     ],
     components: {
