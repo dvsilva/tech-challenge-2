@@ -125,7 +125,7 @@ router.get("/account", accountController.find.bind(accountController));
  *               type:
  *                 type: string
  *                 description: Tipo da transação
- *                 enum: [deposito, saque, transferencia]
+ *                 enum: [exchange, loan, transfer]
  *                 example: "transferencia"
  *               from:
  *                 type: string
@@ -223,7 +223,7 @@ router.post(
  *                 description: Valor da transação
  *               type:
  *                 type: string
- *                 enum: [Credit, Debit]
+ *                 enum: [exchange, loan, transfer]
  *                 example: "Credit"
  *                 description: Tipo da transação
  *               from:
@@ -368,7 +368,7 @@ router.delete(
  *         name: type
  *         schema:
  *           type: string
- *           enum: [deposito, saque, transferencia]
+ *           enum: [exchange, loan, transfer]
  *         description: Filtrar por tipo de transação
  *         example: "transferencia"
  *       - in: query

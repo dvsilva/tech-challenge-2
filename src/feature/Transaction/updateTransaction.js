@@ -4,8 +4,9 @@ const updateTransaction = async ({ transactionId, updateData, repository }) => {
   // Aplica a lógica de reversão de valor se necessário
   if (updateData.type && updateData.value !== undefined) {
     const shouldReverseValue =
-      (updateData.type === "Debit" && updateData.value > 0) ||
-      (updateData.type === "Credit" && updateData.value < 0);
+      (transaction.type === "transfer" && transaction.value > 0) ||
+      ((transaction.type === "exchange" || transaction.type === "loan") &&
+        transaction.value < 0);
     if (shouldReverseValue) updateData.value = updateData.value * -1;
   }
 
