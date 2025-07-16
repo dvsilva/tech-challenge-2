@@ -49,6 +49,7 @@ class DataInitializerService {
         date: new Date(transaction.date),
         from: transaction.description || "Sistema",
         to: transaction.description || "Sistema",
+        description: transaction.description,
         accountId: accountMapping[transaction.id_user] || null,
         originalId: transaction.id, // Mantém o ID original para referência
       }))
@@ -63,10 +64,17 @@ class DataInitializerService {
   async createDefaultAccounts(mongoUsers) {
     const accounts = [];
 
-    for (const user of mongoUsers) {
+    for (let i = 0; i < mongoUsers.length; i++) {
+      const user = mongoUsers[i];
+      // Gera um número de conta único baseado no timestamp e index
+      const accountNumber = `${Date.now().toString().slice(-6)}-${(i + 1)
+        .toString()
+        .padStart(2, "0")}`;
+
       const account = new Account({
         type: "corrente",
         userId: user._id,
+        accountNumber: accountNumber,
       });
 
       const savedAccount = await account.save();

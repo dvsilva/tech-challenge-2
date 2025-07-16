@@ -16,6 +16,9 @@ class AccountController {
         getAccount: require("../feature/Account/getAccount"),
         saveTransaction: require("../feature/Transaction/saveTransaction"),
         getTransaction: require("../feature/Transaction/getTransaction"),
+        getTransactionWithFilters: require("../feature/Transaction/getTransactionWithFilters"),
+        updateTransaction: require("../feature/Transaction/updateTransaction"),
+        deleteTransaction: require("../feature/Transaction/deleteTransaction"),
         getCard: require("../feature/Card/getCard"),
       },
       di
@@ -64,43 +67,131 @@ class AccountController {
 
   async createTransaction(req, res) {
     const { saveTransaction, transactionRepository } = this.di;
-    const { accountId, value, type, from, to, anexo } = req.body;
+    const { accountId, value, type, from, to, anexo, description } = req.body;
     const transactionDTO = new TransactionDTO({
       accountId,
       value,
       from,
       to,
       anexo,
+      description,
       type,
       date: new Date(),
     });
 
-    const transaction = await saveTransaction({
-      transaction: transactionDTO,
-      repository: transactionRepository,
-    });
+    try {
+      const transaction = await saveTransaction({
+        transaction: transactionDTO,
+        repository: transactionRepository,
+      });
 
-    res.status(201).json({
-      message: "Transação criada com sucesso",
-      result: transaction,
-    });
+      res.status(201).json({
+        message: "Transação criada com sucesso",
+        result: transaction,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao criar transação",
+        error: error.message,
+      });
+    }
+  }
+
+  async updateTransaction(req, res) {
+    const { updateTransaction, transactionRepository } = this.di;
+    const { transactionId } = req.params;
+    const updateData = req.body;
+
+    try {
+      const transaction = await updateTransaction({
+        transactionId,
+        updateData,
+        repository: transactionRepository,
+      });
+
+      res.status(200).json({
+        message: "Transação atualizada com sucesso",
+        result: transaction,
+      });
+    } catch (error) {
+      res
+        .status(error.message === "Transação não encontrada" ? 404 : 500)
+        .json({
+          message:
+            error.message === "Transação não encontrada"
+              ? "Transação não encontrada"
+              : "Erro ao atualizar transação",
+          error: error.message,
+        });
+    }
+  }
+
+  async deleteTransaction(req, res) {
+    const { deleteTransaction, transactionRepository } = this.di;
+    const { transactionId } = req.params;
+
+    try {
+      await deleteTransaction({
+        transactionId,
+        repository: transactionRepository,
+      });
+
+      res.status(200).json({
+        message: "Transação excluída com sucesso",
+      });
+    } catch (error) {
+      res
+        .status(error.message === "Transação não encontrada" ? 404 : 500)
+        .json({
+          message:
+            error.message === "Transação não encontrada"
+              ? "Transação não encontrada"
+              : "Erro ao excluir transação",
+          error: error.message,
+        });
+    }
   }
 
   async getStatement(req, res) {
-    const { getTransaction, transactionRepository } = this.di;
+    const { getTransactionWithFilters, transactionRepository } = this.di;
 
     const { accountId } = req.params;
+    const {
+      startDate,
+      endDate,
+      type,
+      page = 1,
+      limit = 10,
+      sortBy = "date",
+      sortOrder = "desc",
+    } = req.query;
 
-    const transactions = await getTransaction({
-      filter: { accountId },
-      repository: transactionRepository,
-    });
-    res.status(201).json({
-      message: "Transação criada com sucesso",
-      result: {
-        transactions,
-      },
-    });
+    try {
+      const result = await getTransactionWithFilters({
+        filter: { accountId },
+        startDate,
+        endDate,
+        type,
+        page,
+        limit,
+        sortBy,
+        sortOrder,
+        repository: transactionRepository,
+      });
+
+      res.status(200).json({
+        message: "Extrato obtido com sucesso",
+        result: {
+          transactions: result.transactions,
+          pagination: result.pagination,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Erro ao obter extrato",
+        error: error.message,
+      });
+    }
   }
 }
 

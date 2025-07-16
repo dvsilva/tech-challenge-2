@@ -62,6 +62,9 @@ const router = Router();
  *                           type:
  *                             type: string
  *                             example: "transferencia"
+ *                           description:
+ *                             type: string
+ *                             example: "Pagamento de mensalidade escolar"
  *                           date:
  *                             type: string
  *                             format: date-time
@@ -136,6 +139,10 @@ router.get("/account", accountController.find.bind(accountController));
  *                 type: string
  *                 description: URL do anexo (opcional)
  *                 example: "https://bucket.s3.amazonaws.com/anexo.pdf"
+ *               description:
+ *                 type: string
+ *                 description: Descrição da transação (opcional)
+ *                 example: "Pagamento de mensalidade escolar"
  *     responses:
  *       201:
  *         description: Transação criada com sucesso
@@ -168,6 +175,9 @@ router.get("/account", accountController.find.bind(accountController));
  *                     to:
  *                       type: string
  *                       example: "João Silva"
+ *                     description:
+ *                       type: string
+ *                       example: "Pagamento de mensalidade escolar"
  *                     date:
  *                       type: string
  *                       format: date-time
@@ -182,6 +192,146 @@ router.get("/account", accountController.find.bind(accountController));
 router.post(
   "/account/transaction",
   accountController.createTransaction.bind(accountController)
+);
+
+/**
+ * @swagger
+ * /account/transaction/{transactionId}:
+ *   put:
+ *     summary: Atualiza uma transação existente
+ *     tags: [Transações]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: transactionId
+ *         required: true
+ *         description: ID da transação a ser atualizada
+ *         schema:
+ *           type: string
+ *           example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               value:
+ *                 type: number
+ *                 example: 150.75
+ *                 description: Valor da transação
+ *               type:
+ *                 type: string
+ *                 enum: [Credit, Debit]
+ *                 example: "Credit"
+ *                 description: Tipo da transação
+ *               from:
+ *                 type: string
+ *                 example: "João Silva"
+ *                 description: Origem da transação
+ *               to:
+ *                 type: string
+ *                 example: "Maria Santos"
+ *                 description: Destino da transação
+ *               anexo:
+ *                 type: string
+ *                 example: "Comprovante de pagamento"
+ *                 description: Anexo ou observação da transação
+ *               description:
+ *                 type: string
+ *                 example: "Pagamento de mensalidade escolar"
+ *                 description: Descrição da transação
+ *     responses:
+ *       200:
+ *         description: Transação atualizada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Transação atualizada com sucesso"
+ *                 result:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                     accountId:
+ *                       type: string
+ *                       example: "60f7b1b9b3f4b3b9b3f4b3b8"
+ *                     value:
+ *                       type: number
+ *                       example: 150.75
+ *                     type:
+ *                       type: string
+ *                       example: "Credit"
+ *                     from:
+ *                       type: string
+ *                       example: "João Silva"
+ *                     to:
+ *                       type: string
+ *                       example: "Maria Santos"
+ *                     description:
+ *                       type: string
+ *                       example: "Pagamento de mensalidade escolar"
+ *                     date:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-07-15T10:30:00.000Z"
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Token inválido
+ *       404:
+ *         description: Transação não encontrada
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.put(
+  "/account/transaction/:transactionId",
+  accountController.updateTransaction.bind(accountController)
+);
+
+/**
+ * @swagger
+ * /account/transaction/{transactionId}:
+ *   delete:
+ *     summary: Exclui uma transação existente
+ *     tags: [Transações]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: transactionId
+ *         required: true
+ *         description: ID da transação a ser excluída
+ *         schema:
+ *           type: string
+ *           example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *     responses:
+ *       200:
+ *         description: Transação excluída com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Transação excluída com sucesso"
+ *       401:
+ *         description: Token inválido
+ *       404:
+ *         description: Transação não encontrada
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.delete(
+  "/account/transaction/:transactionId",
+  accountController.deleteTransaction.bind(accountController)
 );
 
 /**
@@ -221,6 +371,39 @@ router.post(
  *           enum: [deposito, saque, transferencia]
  *         description: Filtrar por tipo de transação
  *         example: "transferencia"
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Número da página para paginação
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Número de transações por página
+ *         example: 10
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [date, value, type]
+ *           default: "date"
+ *         description: Campo para ordenação
+ *         example: "date"
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: "desc"
+ *         description: Ordem da classificação
+ *         example: "desc"
  *     responses:
  *       200:
  *         description: Extrato encontrado
@@ -233,36 +416,64 @@ router.post(
  *                   type: string
  *                   example: "Extrato obtido com sucesso"
  *                 result:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         example: "60f7b1b9b3f4b3b9b3f4b3ba"
- *                       accountId:
- *                         type: string
- *                         example: "60f7b1b9b3f4b3b9b3f4b3b9"
- *                       value:
- *                         type: number
- *                         example: 150.50
- *                       type:
- *                         type: string
- *                         example: "transferencia"
- *                       from:
- *                         type: string
- *                         example: "Conta Corrente"
- *                       to:
- *                         type: string
- *                         example: "João Silva"
- *                       date:
- *                         type: string
- *                         format: date-time
- *                         example: "2023-07-15T10:30:00.000Z"
- *                       anexo:
- *                         type: string
- *                         description: URL do anexo se houver
- *                         example: "https://bucket.s3.amazonaws.com/anexo.pdf"
+ *                   type: object
+ *                   properties:
+ *                     transactions:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "60f7b1b9b3f4b3b9b3f4b3ba"
+ *                           accountId:
+ *                             type: string
+ *                             example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                           value:
+ *                             type: number
+ *                             example: 150.50
+ *                           type:
+ *                             type: string
+ *                             example: "transferencia"
+ *                           from:
+ *                             type: string
+ *                             example: "Conta Corrente"
+ *                           to:
+ *                             type: string
+ *                             example: "João Silva"
+ *                           date:
+ *                             type: string
+ *                             format: date-time
+ *                             example: "2023-07-15T10:30:00.000Z"
+ *                           anexo:
+ *                             type: string
+ *                             description: URL do anexo se houver
+ *                             example: "https://bucket.s3.amazonaws.com/anexo.pdf"
+ *                           description:
+ *                             type: string
+ *                             description: Descrição da transação
+ *                             example: "Pagamento de mensalidade escolar"
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         currentPage:
+ *                           type: integer
+ *                           example: 1
+ *                         totalPages:
+ *                           type: integer
+ *                           example: 5
+ *                         totalCount:
+ *                           type: integer
+ *                           example: 50
+ *                         hasNextPage:
+ *                           type: boolean
+ *                           example: true
+ *                         hasPreviousPage:
+ *                           type: boolean
+ *                           example: false
+ *                         limit:
+ *                           type: integer
+ *                           example: 10
  *       400:
  *         description: ID da conta inválido
  *       401:
