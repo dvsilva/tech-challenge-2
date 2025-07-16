@@ -63,7 +63,7 @@ class UserController {
         functions: "Debit",
         cvc: "505",
         paymentDate: null,
-        name: userCreated.username,
+        name: userCreated.name,
         accountId: accountCreated.id,
         type: "Debit",
       });
