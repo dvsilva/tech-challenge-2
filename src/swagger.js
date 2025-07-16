@@ -5,7 +5,7 @@ const options = {
     openapi: "3.0.0",
     info: {
       title: "API de Contas",
-      version: "1.0.9",
+      version: "1.0.10",
       description: "Documentação da API de Contas",
     },
     tags: [
@@ -26,8 +26,12 @@ const options = {
         description: "Operações relacionadas ao Amazon S3",
       },
       {
-        name: "Auth",
-        description: "Operações de autenticação",
+        name: "Operações de Autenticação",
+        description: "Operações de autenticação e gerenciamento de usuários",
+      },
+      {
+        name: "Health",
+        description: "Verificações de saúde da aplicação",
       },
     ],
     components: {

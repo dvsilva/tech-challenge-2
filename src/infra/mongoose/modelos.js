@@ -123,6 +123,10 @@ const InvestmentSchema = new Schema(
 
 const UserSchema = new Schema(
   {
+    name: {
+      type: String,
+      required: true,
+    },
     username: {
       type: String,
       required: true,
@@ -134,6 +138,36 @@ const UserSchema = new Schema(
     password: {
       type: String,
       required: true,
+    },
+    settings: {
+      notifications: {
+        type: Boolean,
+        default: true,
+      },
+      language: {
+        type: String,
+        default: "pt-BR",
+      },
+      currency: {
+        type: String,
+        default: "BRL",
+      },
+      twoFactorAuth: {
+        type: Boolean,
+        default: false,
+      },
+      emailAlerts: {
+        type: Boolean,
+        default: true,
+      },
+      smsAlerts: {
+        type: Boolean,
+        default: false,
+      },
+      theme: {
+        type: String,
+        default: "light",
+      },
     },
   },
   { timestamps: true }

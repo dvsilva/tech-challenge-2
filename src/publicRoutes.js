@@ -111,7 +111,7 @@ router.get("/health/detailed", async (req, res) => {
  * /user:
  *   get:
  *     summary: Busca usuários
- *     tags: [Users]
+ *     tags: [Operações de Autenticação]
  *     responses:
  *       200:
  *         description: Lista de usuários encontrada com sucesso
@@ -138,7 +138,7 @@ router.get("/user", userController.find.bind(userController));
  * /user:
  *   post:
  *     summary: Cria um novo usuário
- *     tags: [Users]
+ *     tags: [Operações de Autenticação]
  *     requestBody:
  *       required: true
  *       content:
@@ -146,12 +146,23 @@ router.get("/user", userController.find.bind(userController));
  *           schema:
  *             type: object
  *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nome completo do usuário
+ *                 example: "João Silva"
  *               username:
  *                 type: string
+ *                 description: Nome de usuário
+ *                 example: "joao_silva"
  *               email:
  *                 type: string
+ *                 format: email
+ *                 description: Email do usuário
+ *                 example: "joao@email.com"
  *               password:
  *                 type: string
+ *                 description: Senha do usuário
+ *                 example: "senha123"
  *     responses:
  *       201:
  *         description: Usuário criado com sucesso
@@ -165,7 +176,7 @@ router.post("/user", userController.create.bind(userController));
  * /user/auth:
  *   post:
  *     summary: Autenticação de usuário
- *     tags: [Users]
+ *     tags: [Operações de Autenticação]
  *     requestBody:
  *       required: true
  *       content:

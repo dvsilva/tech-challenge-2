@@ -16,6 +16,11 @@ class UserController {
         salvarUsuario: require("../feature/User/salvarUsuario"),
         saveAccount: require("../feature/Account/saveAccount"),
         getUser: require("../feature/User/getUser"),
+        getUserById: require("../feature/User/getUserById"),
+        updateUser: require("../feature/User/updateUser"),
+        deleteUser: require("../feature/User/deleteUser"),
+        changePassword: require("../feature/User/changePassword"),
+        updateUserSettings: require("../feature/User/updateUserSettings"),
       },
       di
     );
@@ -108,6 +113,162 @@ class UserController {
         token: jwt.sign(userToTokenize, JWT_SECRET, { expiresIn: "12h" }),
       },
     });
+  }
+
+  async findById(req, res) {
+    const { userRepository, getUserById } = this.di;
+    const { id } = req.params;
+
+    try {
+      const user = await getUserById({
+        userId: id,
+        repository: userRepository,
+      });
+      res.status(200).json({
+        message: "Usuário encontrado com sucesso",
+        result: user,
+      });
+    } catch (error) {
+      if (error.message === "Usuário não encontrado") {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Erro no servidor" });
+    }
+  }
+
+  async update(req, res) {
+    const { userRepository, updateUser } = this.di;
+    const { id } = req.params;
+    const userData = req.body;
+
+    try {
+      const updatedUser = await updateUser({
+        userId: id,
+        userData,
+        repository: userRepository,
+      });
+      res.status(200).json({
+        message: "Usuário atualizado com sucesso",
+        result: updatedUser,
+      });
+    } catch (error) {
+      if (error.message === "Usuário não encontrado") {
+        return res.status(404).json({ message: error.message });
+      }
+      if (error.message.includes("campo válido")) {
+        return res.status(400).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Erro no servidor" });
+    }
+  }
+
+  async delete(req, res) {
+    const { userRepository, accountRepository, cardRepository, deleteUser } =
+      this.di;
+    const { id } = req.params;
+
+    try {
+      const deletedUser = await deleteUser({
+        userId: id,
+        repository: userRepository,
+        accountRepository,
+        cardRepository,
+      });
+      res.status(200).json({
+        message: "Usuário excluído com sucesso",
+        result: deletedUser,
+      });
+    } catch (error) {
+      if (error.message === "Usuário não encontrado") {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Erro no servidor" });
+    }
+  }
+
+  async changePassword(req, res) {
+    const { userRepository, changePassword } = this.di;
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    try {
+      const updatedUser = await changePassword({
+        userId: id,
+        currentPassword,
+        newPassword,
+        repository: userRepository,
+      });
+      res.status(200).json({
+        message: "Senha alterada com sucesso",
+        result: { id: updatedUser.id, message: "Senha atualizada" },
+      });
+    } catch (error) {
+      if (
+        error.message.includes("não encontrado") ||
+        error.message.includes("incorreta")
+      ) {
+        return res.status(404).json({ message: error.message });
+      }
+      if (error.message.includes("obrigatória")) {
+        return res.status(400).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Erro no servidor" });
+    }
+  }
+
+  async updateSettings(req, res) {
+    const { userRepository, updateUserSettings } = this.di;
+    const { id } = req.params;
+    const settings = req.body;
+
+    try {
+      const updatedUser = await updateUserSettings({
+        userId: id,
+        settings,
+        repository: userRepository,
+      });
+      res.status(200).json({
+        message: "Configurações atualizadas com sucesso",
+        result: updatedUser,
+      });
+    } catch (error) {
+      if (error.message === "Usuário não encontrado") {
+        return res.status(404).json({ message: error.message });
+      }
+      if (error.message.includes("obrigatórias")) {
+        return res.status(400).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Erro no servidor" });
+    }
+  }
+
+  async getSettings(req, res) {
+    const { userRepository, getUserById } = this.di;
+    const { id } = req.params;
+
+    try {
+      const user = await getUserById({
+        userId: id,
+        repository: userRepository,
+      });
+      res.status(200).json({
+        message: "Configurações encontradas com sucesso",
+        result: user.settings || {
+          notifications: true,
+          language: "pt-BR",
+          currency: "BRL",
+          twoFactorAuth: false,
+          emailAlerts: true,
+          smsAlerts: false,
+          theme: "light",
+        },
+      });
+    } catch (error) {
+      if (error.message === "Usuário não encontrado") {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Erro no servidor" });
+    }
   }
   static getToken(token) {
     try {

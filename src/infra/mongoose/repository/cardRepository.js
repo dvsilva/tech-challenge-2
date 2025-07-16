@@ -21,10 +21,15 @@ const deleteById = async (id) => {
   return Card.findByIdAndDelete(id);
 };
 
+const deleteMany = async (filter) => {
+  return Card.deleteMany(filter);
+};
+
 module.exports = {
   create,
   getById,
   get,
   update,
   deleteById,
+  deleteMany,
 };

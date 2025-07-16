@@ -2,8 +2,10 @@ const { Router } = require("express");
 const AccountController = require("./controller/Account");
 const S3Controller = require("./controller/S3");
 const DatabaseController = require("./controller/Database");
+const UserController = require("./controller/User");
 const accountController = new AccountController({});
 const s3Controller = new S3Controller();
+const userController = new UserController({});
 const router = Router();
 
 /**
@@ -1394,5 +1396,352 @@ router.patch(
  *           type: string
  *           example: "João Silva"
  */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - username
+ *         - email
+ *         - password
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID único do usuário
+ *           example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *         name:
+ *           type: string
+ *           description: Nome completo do usuário
+ *           example: "João Silva"
+ *         username:
+ *           type: string
+ *           description: Nome de usuário
+ *           example: "joao_silva"
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email do usuário
+ *           example: "joao@email.com"
+ *         password:
+ *           type: string
+ *           description: Senha do usuário
+ *           example: "senha123"
+ *         settings:
+ *           $ref: '#/components/schemas/UserSettings'
+ *     UserSettings:
+ *       type: object
+ *       properties:
+ *         notifications:
+ *           type: boolean
+ *           description: Receber notificações
+ *           example: true
+ *         language:
+ *           type: string
+ *           description: Idioma preferido
+ *           example: "pt-BR"
+ *         currency:
+ *           type: string
+ *           description: Moeda padrão
+ *           example: "BRL"
+ *         twoFactorAuth:
+ *           type: boolean
+ *           description: Autenticação de dois fatores
+ *           example: false
+ *         emailAlerts:
+ *           type: boolean
+ *           description: Alertas por email
+ *           example: true
+ *         smsAlerts:
+ *           type: boolean
+ *           description: Alertas por SMS
+ *           example: false
+ *         theme:
+ *           type: string
+ *           description: Tema da interface
+ *           example: "light"
+ *     UserUpdate:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Nome completo do usuário
+ *           example: "João Silva Atualizado"
+ *         username:
+ *           type: string
+ *           description: Nome de usuário
+ *           example: "joao_silva_updated"
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email do usuário
+ *           example: "joao.updated@email.com"
+ *     PasswordChange:
+ *       type: object
+ *       required:
+ *         - currentPassword
+ *         - newPassword
+ *       properties:
+ *         currentPassword:
+ *           type: string
+ *           description: Senha atual
+ *           example: "senha123"
+ *         newPassword:
+ *           type: string
+ *           description: Nova senha
+ *           example: "novaSenha456"
+ */
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Busca usuário por ID
+ *     tags: [Operações de Autenticação]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do usuário
+ *     responses:
+ *       200:
+ *         description: Usuário encontrado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Usuário encontrado com sucesso"
+ *                 result:
+ *                   $ref: '#/components/schemas/User'
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+router.get("/users/:id", userController.findById.bind(userController));
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Atualiza dados do usuário
+ *     tags: [Operações de Autenticação]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do usuário
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserUpdate'
+ *     responses:
+ *       200:
+ *         description: Usuário atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Usuário atualizado com sucesso"
+ *                 result:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Dados inválidos
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+router.put("/users/:id", userController.update.bind(userController));
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Exclui usuário
+ *     tags: [Operações de Autenticação]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do usuário
+ *     responses:
+ *       200:
+ *         description: Usuário excluído com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Usuário excluído com sucesso"
+ *                 result:
+ *                   $ref: '#/components/schemas/User'
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+router.delete("/users/:id", userController.delete.bind(userController));
+
+/**
+ * @swagger
+ * /users/{id}/change-password:
+ *   put:
+ *     summary: Altera senha do usuário
+ *     tags: [Operações de Autenticação]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do usuário
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PasswordChange'
+ *     responses:
+ *       200:
+ *         description: Senha alterada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Senha alterada com sucesso"
+ *                 result:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                     message:
+ *                       type: string
+ *                       example: "Senha atualizada"
+ *       400:
+ *         description: Dados inválidos
+ *       404:
+ *         description: Usuário não encontrado ou senha incorreta
+ *       500:
+ *         description: Erro no servidor
+ */
+router.put(
+  "/users/:id/change-password",
+  userController.changePassword.bind(userController)
+);
+
+/**
+ * @swagger
+ * /users/{id}/settings:
+ *   get:
+ *     summary: Busca configurações do usuário
+ *     tags: [Operações de Autenticação]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do usuário
+ *     responses:
+ *       200:
+ *         description: Configurações encontradas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Configurações encontradas com sucesso"
+ *                 result:
+ *                   $ref: '#/components/schemas/UserSettings'
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+router.get(
+  "/users/:id/settings",
+  userController.getSettings.bind(userController)
+);
+
+/**
+ * @swagger
+ * /users/{id}/settings:
+ *   put:
+ *     summary: Atualiza configurações do usuário
+ *     tags: [Operações de Autenticação]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do usuário
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserSettings'
+ *     responses:
+ *       200:
+ *         description: Configurações atualizadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Configurações atualizadas com sucesso"
+ *                 result:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Dados inválidos
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+router.put(
+  "/users/:id/settings",
+  userController.updateSettings.bind(userController)
+);
 
 module.exports = router;
