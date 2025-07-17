@@ -1,4 +1,5 @@
 const TransactionDTO = require("../models/DetailedAccount");
+const GetInvestment = require("../feature/Investment/getInvestment");
 
 class AccountController {
   constructor(di = {}) {
@@ -8,6 +9,7 @@ class AccountController {
         accountRepository: require("../infra/mongoose/repository/accountRepository"),
         cardRepository: require("../infra/mongoose/repository/cardRepository"),
         transactionRepository: require("../infra/mongoose/repository/detailedAccountRepository"),
+        investmentRepository: require("../infra/mongoose/repository/investmentRepository"),
 
         saveCard: require("../feature/Card/saveCard"),
         getCard: require("../feature/Card/getCard"),
@@ -26,6 +28,9 @@ class AccountController {
       },
       di
     );
+
+    // Inicializar a classe GetInvestment
+    this.getInvestment = new GetInvestment();
   }
 
   async find(req, res) {
@@ -44,14 +49,20 @@ class AccountController {
         repository: accountRepository,
         filter: { userId },
       });
-      const transactions = await getTransaction({
-        filter: { accountId: account[0].id },
-        repository: transactionRepository,
-      });
-      const cards = await getCard({
-        filter: { accountId: account[0].id },
-        repository: cardRepository,
-      });
+
+      const accountId = account[0].id;
+
+      const [transactions, cards, investmentsResult] = await Promise.all([
+        getTransaction({
+          filter: { accountId },
+          repository: transactionRepository,
+        }),
+        getCard({
+          filter: { accountId },
+          repository: cardRepository,
+        }),
+        this.getInvestment.execute(accountId),
+      ]);
 
       res.status(200).json({
         message: "Conta encontrada carregado com sucesso",
@@ -59,11 +70,23 @@ class AccountController {
           account,
           transactions,
           cards,
+          investments: investmentsResult.success
+            ? {
+                investments: investmentsResult.investments,
+                summary: investmentsResult.summary,
+                count: investmentsResult.count,
+              }
+            : {
+                investments: [],
+                summary: null,
+                count: 0,
+              },
         },
       });
     } catch (error) {
       res.status(500).json({
         message: "Erro no servidor",
+        error: error.message,
       });
     }
   }

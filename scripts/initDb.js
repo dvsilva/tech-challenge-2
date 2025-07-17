@@ -4,11 +4,12 @@
  * Script para inicializar o banco de dados com dados do db.json
  *
  * Uso:
- * node scripts/initDb.js [--force] [--stats]
+ * node scripts/initDb.js [--force] [--stats] [--investments-only]
  *
  * Opções:
  * --force: Força a reinicialização, removendo dados existentes
  * --stats: Exibe apenas as estatísticas do banco sem inicializar
+ * --investments-only: Inicializa apenas os investimentos
  */
 
 require("dotenv").config();
@@ -19,6 +20,7 @@ async function main() {
   const args = process.argv.slice(2);
   const forceReset = args.includes("--force");
   const showStatsOnly = args.includes("--stats");
+  const investmentsOnly = args.includes("--investments-only");
 
   try {
     console.log("Conectando ao banco de dados...");
@@ -28,6 +30,25 @@ async function main() {
     const initializer = new DataInitializerService();
 
     if (showStatsOnly) {
+      await initializer.showDatabaseStats();
+      process.exit(0);
+    }
+
+    if (investmentsOnly) {
+      console.log("\n=== Inicializador de Investimentos ===");
+      console.log(
+        `Modo: ${forceReset ? "RESET FORÇADO" : "INICIALIZAÇÃO NORMAL"}`
+      );
+      console.log("====================================\n");
+
+      const result = await initializer.initializeInvestmentsOnly(forceReset);
+
+      if (result) {
+        console.log("\n=== Resultado da Inicialização ===");
+        console.log(`✅ Investimentos criados: ${result.investmentsCreated}`);
+        console.log("=================================\n");
+      }
+
       await initializer.showDatabaseStats();
       process.exit(0);
     }
@@ -45,6 +66,7 @@ async function main() {
       console.log(`✅ Usuários criados: ${result.usersCreated}`);
       console.log(`✅ Contas criadas: ${result.accountsCreated}`);
       console.log(`✅ Transações criadas: ${result.transactionsCreated}`);
+      console.log(`✅ Investimentos criados: ${result.investmentsCreated}`);
       console.log("=================================\n");
     }
 

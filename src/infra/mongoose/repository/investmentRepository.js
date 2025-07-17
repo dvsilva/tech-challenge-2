@@ -89,22 +89,36 @@ class InvestmentRepository {
     }
   }
 
-  async getTotalInvestmentsByAccount(accountId) {
+  async getInvestmentsByCategory(accountId) {
     try {
       const result = await Investment.aggregate([
         { $match: { accountId } },
         {
           $group: {
-            _id: null,
+            _id: "$category",
             totalValue: { $sum: "$value" },
+            totalInitialValue: { $sum: "$initialValue" },
             count: { $sum: 1 },
           },
         },
       ]);
-      return result[0] || { totalValue: 0, count: 0 };
+      return result;
     } catch (error) {
       throw new Error(
-        `Erro ao calcular total de investimentos: ${error.message}`
+        `Erro ao buscar investimentos por categoria: ${error.message}`
+      );
+    }
+  }
+
+  async findByCategory(accountId, category) {
+    try {
+      const investments = await Investment.find({ accountId, category })
+        .populate("accountId", "accountNumber type")
+        .sort({ createdAt: -1 });
+      return investments;
+    } catch (error) {
+      throw new Error(
+        `Erro ao buscar investimentos por categoria: ${error.message}`
       );
     }
   }

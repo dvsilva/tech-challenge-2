@@ -8,6 +8,9 @@
     "dev": "cross-env NODE_ENV=development nodemon src/index.js",
     "init-db": "cross-env NODE_ENV=production node scripts/initDb.js",
     "init-db:force": "cross-env NODE_ENV=production  node scripts/initDb.js --force",
+    "init-investments": "cross-env NODE_ENV=production node scripts/initDb.js --investments-only",
+    "init-investments:force": "cross-env NODE_ENV=production node scripts/initDb.js --investments-only --force",
+    "test-investments": "cross-env NODE_ENV=production node scripts/testInvestments.js",
     "db:stats": "cross-env NODE_ENV=production node scripts/initDb.js --stats"
   },
   "author": "",

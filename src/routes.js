@@ -90,6 +90,62 @@ const router = Router();
  *                           cardType:
  *                             type: string
  *                             example: "debito"
+ *                     investments:
+ *                       type: object
+ *                       properties:
+ *                         investments:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: string
+ *                                 example: "60f7b1b9b3f4b3b9b3f4b3bc"
+ *                               accountId:
+ *                                 type: string
+ *                                 example: "60f7b1b9b3f4b3b9b3f4b3b9"
+ *                               type:
+ *                                 type: string
+ *                                 example: "CDB"
+ *                               category:
+ *                                 type: string
+ *                                 example: "Renda Fixa"
+ *                               value:
+ *                                 type: number
+ *                                 example: 5000.00
+ *                               initialValue:
+ *                                 type: number
+ *                                 example: 4500.00
+ *                               profit:
+ *                                 type: number
+ *                                 example: 500.00
+ *                               profitPercentage:
+ *                                 type: number
+ *                                 example: 11.11
+ *                               isMatured:
+ *                                 type: boolean
+ *                                 example: false
+ *                         summary:
+ *                           type: object
+ *                           properties:
+ *                             totalValue:
+ *                               type: number
+ *                               example: 15000.00
+ *                             totalInitialValue:
+ *                               type: number
+ *                               example: 13500.00
+ *                             totalProfit:
+ *                               type: number
+ *                               example: 1500.00
+ *                             totalProfitPercentage:
+ *                               type: number
+ *                               example: 11.11
+ *                             totalInvestments:
+ *                               type: number
+ *                               example: 3
+ *                         count:
+ *                           type: number
+ *                           example: 3
  *       401:
  *         description: Token inválido
  *       500:
@@ -1032,6 +1088,75 @@ router.get("/database/status", DatabaseController.getDatabaseStatus);
  *         description: Erro interno do servidor
  */
 router.delete("/database/clear", DatabaseController.clearDatabase);
+
+/**
+ * @swagger
+ * /database/initialize-investments:
+ *   post:
+ *     summary: Inicializa apenas os investimentos no banco de dados
+ *     tags: [Database]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               forceReset:
+ *                 type: boolean
+ *                 description: Se verdadeiro, remove investimentos existentes antes de criar novos
+ *                 example: false
+ *     responses:
+ *       200:
+ *         description: Investimentos inicializados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Investimentos inicializados com sucesso"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     created:
+ *                       type: object
+ *                       properties:
+ *                         investmentsCreated:
+ *                           type: number
+ *                           example: 12
+ *                     currentStats:
+ *                       type: object
+ *                       properties:
+ *                         users:
+ *                           type: number
+ *                           example: 6
+ *                         accounts:
+ *                           type: number
+ *                           example: 6
+ *                         transactions:
+ *                           type: number
+ *                           example: 45
+ *                         investments:
+ *                           type: number
+ *                           example: 12
+ *       400:
+ *         description: Dados inválidos ou usuários/contas não encontrados
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.post(
+  "/database/initialize-investments",
+  DatabaseController.initializeInvestments
+);
 
 // Card CRUD Routes
 

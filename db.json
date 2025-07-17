@@ -318,5 +318,213 @@
       "date": "2025-06-02T02:01:38.372Z",
       "id_user": "u2"
     }
+  ],
+  "investments": [
+    {
+      "id": "inv1",
+      "type": "CDB",
+      "name": "CDB Banco Seguro - 120% CDI",
+      "value": 5000.0,
+      "id_user": "u1",
+      "dateCreated": "2025-01-15T10:00:00.000Z",
+      "maturityDate": "2026-01-15T10:00:00.000Z",
+      "interestRate": 1.2,
+      "riskLevel": "baixo"
+    },
+    {
+      "id": "inv2",
+      "type": "LCI",
+      "name": "LCI Imobiliária Premium",
+      "value": 10000.0,
+      "id_user": "u1",
+      "dateCreated": "2025-02-01T10:00:00.000Z",
+      "maturityDate": "2027-02-01T10:00:00.000Z",
+      "interestRate": 1.15,
+      "riskLevel": "baixo"
+    },
+    {
+      "id": "inv3",
+      "type": "Tesouro Direto",
+      "name": "Tesouro Selic 2029",
+      "value": 3000.0,
+      "id_user": "u2",
+      "dateCreated": "2025-01-20T10:00:00.000Z",
+      "maturityDate": "2029-01-20T10:00:00.000Z",
+      "interestRate": 1.0,
+      "riskLevel": "baixo"
+    },
+    {
+      "id": "inv4",
+      "type": "Fundos de Investimento",
+      "name": "Fundo Multimercado Alpha",
+      "value": 7500.0,
+      "id_user": "u2",
+      "dateCreated": "2025-03-01T10:00:00.000Z",
+      "maturityDate": "2026-03-01T10:00:00.000Z",
+      "interestRate": 1.35,
+      "riskLevel": "medio"
+    },
+    {
+      "id": "inv5",
+      "type": "Ações",
+      "name": "Carteira Diversificada IBOV",
+      "value": 15000.0,
+      "id_user": "u3",
+      "dateCreated": "2025-01-10T10:00:00.000Z",
+      "maturityDate": null,
+      "interestRate": null,
+      "riskLevel": "alto"
+    },
+    {
+      "id": "inv6",
+      "type": "CDB",
+      "name": "CDB Banco Digital - 115% CDI",
+      "value": 2500.0,
+      "id_user": "u3",
+      "dateCreated": "2025-02-15T10:00:00.000Z",
+      "maturityDate": "2026-02-15T10:00:00.000Z",
+      "interestRate": 1.15,
+      "riskLevel": "baixo"
+    },
+    {
+      "id": "inv7",
+      "type": "Criptomoedas",
+      "name": "Portfolio Crypto Diversificado",
+      "value": 5000.0,
+      "id_user": "u4",
+      "dateCreated": "2025-01-05T10:00:00.000Z",
+      "maturityDate": null,
+      "interestRate": null,
+      "riskLevel": "alto"
+    },
+    {
+      "id": "inv8",
+      "type": "LCA",
+      "name": "LCA Agronegócio Crescimento",
+      "value": 8000.0,
+      "id_user": "u4",
+      "dateCreated": "2025-02-20T10:00:00.000Z",
+      "maturityDate": "2027-02-20T10:00:00.000Z",
+      "interestRate": 1.18,
+      "riskLevel": "baixo"
+    },
+    {
+      "id": "inv9",
+      "type": "Fundos Imobiliários",
+      "name": "FII Shopping Centers Brasil",
+      "value": 12000.0,
+      "id_user": "u5",
+      "dateCreated": "2025-01-25T10:00:00.000Z",
+      "maturityDate": null,
+      "interestRate": 0.85,
+      "riskLevel": "medio"
+    },
+    {
+      "id": "inv10",
+      "type": "Tesouro Direto",
+      "name": "Tesouro IPCA+ 2035",
+      "value": 6000.0,
+      "id_user": "u5",
+      "dateCreated": "2025-03-10T10:00:00.000Z",
+      "maturityDate": "2035-05-15T10:00:00.000Z",
+      "interestRate": 1.1,
+      "riskLevel": "baixo"
+    },
+    {
+      "id": "inv11",
+      "type": "Debêntures",
+      "name": "Debênture Infraestrutura Verde",
+      "value": 20000.0,
+      "id_user": "u6",
+      "dateCreated": "2025-01-30T10:00:00.000Z",
+      "maturityDate": "2030-01-30T10:00:00.000Z",
+      "interestRate": 1.45,
+      "riskLevel": "medio"
+    },
+    {
+      "id": "inv12",
+      "type": "CDB",
+      "name": "CDB Verde Sustentável - 125% CDI",
+      "value": 4000.0,
+      "id_user": "u6",
+      "dateCreated": "2025-02-10T10:00:00.000Z",
+      "maturityDate": "2026-02-10T10:00:00.000Z",
+      "interestRate": 1.25,
+      "riskLevel": "baixo"
+    }
+  ],
+  "cards": [
+    {
+      "id": "c1",
+      "type": "GOLD",
+      "is_blocked": false,
+      "number": "4532123456789012",
+      "dueDate": "2027-12-31T23:59:59.000Z",
+      "functions": "Debit",
+      "cvc": "123",
+      "paymentDate": null,
+      "name": "João Silva",
+      "id_user": "u1"
+    },
+    {
+      "id": "c2",
+      "type": "PLATINUM",
+      "is_blocked": false,
+      "number": "5425234567890123",
+      "dueDate": "2028-06-30T23:59:59.000Z",
+      "functions": "Credit",
+      "cvc": "456",
+      "paymentDate": "2025-08-15T10:00:00.000Z",
+      "name": "Maria Souza",
+      "id_user": "u2"
+    },
+    {
+      "id": "c3",
+      "type": "STANDARD",
+      "is_blocked": false,
+      "number": "4716345678901234",
+      "dueDate": "2026-09-30T23:59:59.000Z",
+      "functions": "Debit",
+      "cvc": "789",
+      "paymentDate": null,
+      "name": "Carlos Lima",
+      "id_user": "u3"
+    },
+    {
+      "id": "c4",
+      "type": "GOLD",
+      "is_blocked": false,
+      "number": "5512456789012345",
+      "dueDate": "2027-03-31T23:59:59.000Z",
+      "functions": "Credit",
+      "cvc": "321",
+      "paymentDate": "2025-08-20T10:00:00.000Z",
+      "name": "Ana Pereira",
+      "id_user": "u4"
+    },
+    {
+      "id": "c5",
+      "type": "PLATINUM",
+      "is_blocked": false,
+      "number": "4829567890123456",
+      "dueDate": "2028-11-30T23:59:59.000Z",
+      "functions": "Debit",
+      "cvc": "654",
+      "paymentDate": null,
+      "name": "Lucas Oliveira",
+      "id_user": "u5"
+    },
+    {
+      "id": "c6",
+      "type": "STANDARD",
+      "is_blocked": false,
+      "number": "5378678901234567",
+      "dueDate": "2026-07-31T23:59:59.000Z",
+      "functions": "Credit",
+      "cvc": "987",
+      "paymentDate": "2025-08-25T10:00:00.000Z",
+      "name": "Mariano Oliveira",
+      "id_user": "u6"
+    }
   ]
 }

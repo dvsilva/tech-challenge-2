@@ -32,6 +32,8 @@ async function autoInitializeDatabase() {
       console.log(`   - Usuários: ${result.usersCreated}`);
       console.log(`   - Contas: ${result.accountsCreated}`);
       console.log(`   - Transações: ${result.transactionsCreated}`);
+      console.log(`   - Investimentos: ${result.investmentsCreated}`);
+      console.log(`   - Cartões: ${result.cardsCreated || 0}`);
     }
   } catch (error) {
     console.error("❌ Erro durante auto-inicialização:", error.message);

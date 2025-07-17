@@ -91,6 +91,37 @@ class DatabaseController {
   }
 
   /**
+   * Inicializa apenas os investimentos no banco de dados
+   * POST /api/database/initialize-investments
+   */
+  static async initializeInvestments(req, res) {
+    try {
+      const { forceReset = false } = req.body;
+
+      const initializer = new DataInitializerService();
+      const result = await initializer.initializeInvestmentsOnly(forceReset);
+
+      const stats = await initializer.showDatabaseStats();
+
+      res.status(200).json({
+        success: true,
+        message: "Investimentos inicializados com sucesso",
+        data: {
+          created: result,
+          currentStats: stats,
+        },
+      });
+    } catch (error) {
+      console.error("Erro ao inicializar investimentos:", error);
+      res.status(500).json({
+        success: false,
+        message: "Erro interno do servidor ao inicializar investimentos",
+        error: error.message,
+      });
+    }
+  }
+
+  /**
    * Verifica se o banco foi inicializado
    * GET /api/database/status
    */

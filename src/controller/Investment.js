@@ -6,6 +6,7 @@ const DeleteInvestment = require("../feature/Investment/deleteInvestment");
 const TransferToInvestment = require("../feature/Investment/transferToInvestment");
 const RedeemInvestment = require("../feature/Investment/redeemInvestment");
 const jwt = require("jsonwebtoken");
+const JWT_SECRET = "tech-challenge";
 
 class InvestmentController {
   constructor() {
@@ -21,7 +22,7 @@ class InvestmentController {
   async create(req, res) {
     try {
       const token = req.headers.authorization?.replace("Bearer ", "");
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       const accountId = decoded.accountId;
 
       const result = await this.saveInvestment.execute(req.body, accountId);
@@ -48,7 +49,7 @@ class InvestmentController {
   async find(req, res) {
     try {
       const token = req.headers.authorization?.replace("Bearer ", "");
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       const accountId = decoded.accountId;
 
       const filters = {
@@ -84,7 +85,7 @@ class InvestmentController {
   async findById(req, res) {
     try {
       const token = req.headers.authorization?.replace("Bearer ", "");
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       const accountId = decoded.accountId;
       const investmentId = req.params.id;
 
@@ -114,7 +115,7 @@ class InvestmentController {
   async update(req, res) {
     try {
       const token = req.headers.authorization?.replace("Bearer ", "");
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       const accountId = decoded.accountId;
       const investmentId = req.params.id;
 
@@ -146,7 +147,7 @@ class InvestmentController {
   async delete(req, res) {
     try {
       const token = req.headers.authorization?.replace("Bearer ", "");
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       const accountId = decoded.accountId;
       const investmentId = req.params.id;
 
@@ -176,7 +177,7 @@ class InvestmentController {
   async transfer(req, res) {
     try {
       const token = req.headers.authorization?.replace("Bearer ", "");
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       const accountId = decoded.accountId;
 
       const result = await this.transferToInvestment.execute(
@@ -211,7 +212,7 @@ class InvestmentController {
   async redeem(req, res) {
     try {
       const token = req.headers.authorization?.replace("Bearer ", "");
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       const accountId = decoded.accountId;
 
       const result = await this.redeemInvestment.execute(req.body, accountId);

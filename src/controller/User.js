@@ -97,7 +97,7 @@ class UserController {
     }
   }
   async auth(req, res) {
-    const { userRepository, getUser } = this.di;
+    const { userRepository, accountRepository, getUser } = this.di;
     const { email, password } = req.body;
     const user = await getUser({
       repository: userRepository,
@@ -106,7 +106,17 @@ class UserController {
 
     if (!user?.[0])
       return res.status(401).json({ message: "Usuário não encontrado" });
-    const userToTokenize = { ...user[0], id: user[0].id.toString() };
+
+    // Buscar a conta do usuário para incluir o accountId no token
+    const userAccounts = await accountRepository.find({ userId: user[0].id });
+    const accountId = userAccounts?.[0]?.id || null;
+
+    const userToTokenize = {
+      ...user[0],
+      id: user[0].id.toString(),
+      accountId: accountId ? accountId.toString() : null,
+    };
+
     res.status(200).json({
       message: "Usuário autenticado com sucesso",
       result: {

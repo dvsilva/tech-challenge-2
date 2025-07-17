@@ -76,7 +76,7 @@ app.use(routes);
 connectDB()
   .then(async () => {
     // Auto-inicialização do banco de dados (se habilitada)
-    // await autoInitializeDatabase();
+    await autoInitializeDatabase();
 
     const port = process.env.PORT || 3000;
     app.listen(port, () => {
