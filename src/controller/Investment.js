@@ -252,34 +252,15 @@ class InvestmentController {
           { value: "renda_variavel", label: "Renda Variável" },
         ],
         categories: [
+          { value: "certificados_deposito", label: "Certificados de Depósito" },
+          { value: "letras_credito", label: "Letras de Crédito" },
+          { value: "tesouro_direto", label: "Tesouro Direto" },
           { value: "fundos_investimento", label: "Fundos de Investimento" },
-          { value: "previdencia_privada", label: "Previdência Privada" },
-          { value: "bolsa_valores", label: "Bolsa de Valores" },
+          { value: "acoes", label: "Ações" },
+          { value: "criptomoedas", label: "Criptomoedas" },
+          { value: "fundos_imobiliarios", label: "Fundos Imobiliários" },
+          { value: "debentures", label: "Debêntures" },
         ],
-        subtypes: {
-          renda_fixa: {
-            fundos_investimento: [
-              "CDB",
-              "LCI",
-              "LCA",
-              "LC",
-              "Tesouro Direto",
-              "Debêntures",
-            ],
-            previdencia_privada: ["PGBL", "VGBL", "Previdência Corporativa"],
-            bolsa_valores: ["Tesouro Direto"],
-          },
-          renda_variavel: {
-            fundos_investimento: [
-              "Fundos de Ações",
-              "Fundos Multimercado",
-              "Fundos Cambiais",
-              "ETFs",
-            ],
-            previdencia_privada: ["VGBL Multimercado", "PGBL Multimercado"],
-            bolsa_valores: ["Ações", "FIIs", "BDRs", "Options", "Futuros"],
-          },
-        },
         riskLevels: [
           { value: "baixo", label: "Baixo" },
           { value: "medio", label: "Médio" },

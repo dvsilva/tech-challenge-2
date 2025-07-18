@@ -62,7 +62,7 @@ class GetInvestment {
       });
 
       // Calcular resumo dos investimentos
-      const summary = await this.calculateSummary(accountId);
+      const summary = await this.calculateSummary(accountId, filters);
 
       return {
         success: true,
@@ -80,46 +80,71 @@ class GetInvestment {
     }
   }
 
-  async calculateSummary(accountId) {
+  async calculateSummary(accountId, filters = {}) {
     try {
       const [totalData, categoryData] = await Promise.all([
-        this.investmentRepository.getTotalInvestmentsByAccount(accountId),
-        this.investmentRepository.getInvestmentsByCategory(accountId),
+        this.investmentRepository.getTotalInvestmentsByAccountWithFilters(
+          accountId,
+          filters
+        ),
+        this.investmentRepository.getInvestmentsByCategoryWithFilters(
+          accountId,
+          filters
+        ),
       ]);
 
-      const totalProfit = totalData.totalValue - totalData.totalInitialValue;
+      // Verificar se os dados existem
+      const safeTotalData = totalData || {
+        totalValue: 0,
+        totalInitialValue: 0,
+        count: 0,
+      };
+      const safeCategoryData = categoryData || [];
+
+      const totalProfit =
+        (safeTotalData.totalValue || 0) -
+        (safeTotalData.totalInitialValue || 0);
       const totalProfitPercentage =
-        totalData.totalInitialValue > 0
-          ? (totalProfit / totalData.totalInitialValue) * 100
+        (safeTotalData.totalInitialValue || 0) > 0
+          ? (totalProfit / safeTotalData.totalInitialValue) * 100
           : 0;
 
       return {
-        totalValue: totalData.totalValue,
-        totalInitialValue: totalData.totalInitialValue,
+        totalValue: safeTotalData.totalValue || 0,
+        totalInitialValue: safeTotalData.totalInitialValue || 0,
         totalProfit,
         totalProfitPercentage: parseFloat(totalProfitPercentage.toFixed(2)),
-        totalInvestments: totalData.count,
-        byCategory: categoryData.map((cat) => ({
-          category: cat._id,
-          totalValue: cat.totalValue,
-          totalInitialValue: cat.totalInitialValue,
-          count: cat.count,
-          averageYield: parseFloat((cat.averageYield || 0).toFixed(2)),
-          profit: cat.totalValue - cat.totalInitialValue,
-          profitPercentage:
-            cat.totalInitialValue > 0
-              ? parseFloat(
-                  (
-                    ((cat.totalValue - cat.totalInitialValue) /
-                      cat.totalInitialValue) *
-                    100
-                  ).toFixed(2)
-                )
-              : 0,
-        })),
+        totalInvestments: safeTotalData.count || 0,
+        byCategory: safeCategoryData.map((cat) => {
+          const categoryProfit =
+            (cat.totalValue || 0) - (cat.totalInitialValue || 0);
+          const categoryProfitPercentage =
+            (cat.totalInitialValue || 0) > 0
+              ? (categoryProfit / cat.totalInitialValue) * 100
+              : 0;
+
+          return {
+            category: cat._id || "unknown",
+            totalValue: cat.totalValue || 0,
+            totalInitialValue: cat.totalInitialValue || 0,
+            count: cat.count || 0,
+            averageYield: parseFloat((cat.averageYield || 0).toFixed(2)),
+            profit: categoryProfit,
+            profitPercentage: parseFloat(categoryProfitPercentage.toFixed(2)),
+          };
+        }),
       };
     } catch (error) {
-      throw new Error(`Erro ao calcular resumo: ${error.message}`);
+      console.error("Erro detalhado no calculateSummary:", error);
+      // Return default summary structure instead of throwing error
+      return {
+        totalValue: 0,
+        totalInitialValue: 0,
+        totalProfit: 0,
+        totalProfitPercentage: 0,
+        totalInvestments: 0,
+        byCategory: [],
+      };
     }
   }
 }

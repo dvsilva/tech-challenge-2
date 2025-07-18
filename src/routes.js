@@ -1913,10 +1913,10 @@ router.put(
  *                         properties:
  *                           value:
  *                             type: string
- *                             example: "fundos_investimento"
+ *                             example: "certificados_deposito"
  *                           label:
  *                             type: string
- *                             example: "Fundos de Investimento"
+ *                             example: "Certificados de Depósito"
  *                     subtypes:
  *                       type: object
  *                     riskLevels:
@@ -1959,7 +1959,7 @@ router.get(
  *         name: category
  *         schema:
  *           type: string
- *           enum: [fundos_investimento, previdencia_privada, bolsa_valores]
+ *           enum: [certificados_deposito, letras_credito, tesouro_direto, debentures, fundos_investimento, acoes, criptomoedas, fundos_imobiliarios]
  *         description: Filtrar por categoria de investimento
  *     responses:
  *       200:
@@ -1988,13 +1988,13 @@ router.get(
  *                             example: "renda_fixa"
  *                           category:
  *                             type: string
- *                             example: "fundos_investimento"
+ *                             example: "certificados_deposito"
  *                           subtype:
  *                             type: string
- *                             example: "CDB"
+ *                             example: "CDB Prefixado"
  *                           name:
  *                             type: string
- *                             example: "CDB Banco XYZ"
+ *                             example: "CDB Banco Seguro - 120% CDI"
  *                           value:
  *                             type: number
  *                             example: 10500.00
@@ -2085,24 +2085,24 @@ router.get(
  *                 description: "Tipo do investimento"
  *               category:
  *                 type: string
- *                 enum: [fundos_investimento, previdencia_privada, bolsa_valores]
- *                 example: "fundos_investimento"
+ *                 enum: [certificados_deposito, letras_credito, tesouro_direto, debentures, fundos_investimento, acoes, criptomoedas, fundos_imobiliarios]
+ *                 example: "certificados_deposito"
  *                 description: "Categoria do investimento"
  *               subtype:
  *                 type: string
- *                 example: "CDB"
+ *                 example: "CDB Prefixado"
  *                 description: "Subtipo específico do investimento"
  *               name:
  *                 type: string
- *                 example: "CDB Banco XYZ 120% CDI"
+ *                 example: "CDB Banco Seguro - 120% CDI"
  *                 description: "Nome do investimento"
  *               initialValue:
  *                 type: number
- *                 example: 10000.00
+ *                 example: 5000.00
  *                 description: "Valor inicial investido"
  *               currentYield:
  *                 type: number
- *                 example: 5.2
+ *                 example: 12.5
  *                 description: "Rendimento atual em porcentagem"
  *               maturityDate:
  *                 type: string
@@ -2116,7 +2116,7 @@ router.get(
  *                 description: "Nível de risco do investimento"
  *               description:
  *                 type: string
- *                 example: "Investimento em CDB com liquidez diária"
+ *                 example: "Investimento em CDB com rendimento prefixado"
  *                 description: "Descrição adicional do investimento"
  *     responses:
  *       201:
