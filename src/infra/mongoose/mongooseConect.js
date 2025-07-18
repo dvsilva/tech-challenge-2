@@ -3,7 +3,20 @@ const { MongoMemoryServer } = require("mongodb-memory-server");
 
 async function connectDB() {
   try {
-    if (process.env.NODE_ENV === "development" || !process.env.MONGODB_URI) {
+    if (
+      process.env.MONGODB_URI &&
+      process.env.MONGODB_URI.includes("mongodb+srv")
+    ) {
+      // Conectar ao MongoDB Atlas
+      await mongoose.connect(process.env.MONGODB_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      console.log("Conectado ao MongoDB Atlas");
+    } else if (
+      process.env.NODE_ENV === "development" ||
+      !process.env.MONGODB_URI
+    ) {
       // Iniciar MongoDB em memória para desenvolvimento
       const mongod = await MongoMemoryServer.create();
       const mongoUri = mongod.getUri();

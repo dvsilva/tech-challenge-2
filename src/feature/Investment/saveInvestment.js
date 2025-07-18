@@ -13,10 +13,17 @@ class SaveInvestment {
 
       // Criar o objeto de investimento
       const investment = {
-        ...investmentData,
-        accountId,
+        type: investmentData.type,
+        category: investmentData.category,
+        subtype: investmentData.subtype,
+        name: investmentData.name,
         value: investmentData.initialValue, // Valor inicial igual ao valor atual na criação
-        purchaseDate: new Date(),
+        initialValue: investmentData.initialValue,
+        currentYield: investmentData.currentYield || 0,
+        riskLevel: investmentData.riskLevel,
+        purchaseDate: investmentData.purchaseDate || new Date(),
+        maturityDate: investmentData.maturityDate || null,
+        accountId,
       };
 
       // Salvar o investimento
@@ -37,7 +44,7 @@ class SaveInvestment {
   }
 
   validateInvestmentData(data) {
-    const { type, category, subtype, initialValue, name } = data;
+    const { type, category, subtype, initialValue, name, riskLevel } = data;
 
     if (!type || !["renda_fixa", "renda_variavel"].includes(type)) {
       throw new Error(
@@ -45,14 +52,23 @@ class SaveInvestment {
       );
     }
 
-    if (
-      !category ||
-      !["fundos_investimento", "previdencia_privada", "bolsa_valores"].includes(
-        category
-      )
-    ) {
+    const validCategories = [
+      "cdb",
+      "lci",
+      "lca",
+      "tesouro_direto",
+      "debentures",
+      "fundos_investimento",
+      "fundos_imobiliarios",
+      "acoes",
+      "criptomoedas",
+    ];
+
+    if (!category || !validCategories.includes(category)) {
       throw new Error(
-        "Categoria de investimento inválida. Use 'fundos_investimento', 'previdencia_privada' ou 'bolsa_valores'"
+        `Categoria de investimento inválida. Use uma das seguintes: ${validCategories.join(
+          ", "
+        )}`
       );
     }
 
@@ -68,6 +84,10 @@ class SaveInvestment {
       throw new Error("Nome do investimento é obrigatório");
     }
 
+    if (!riskLevel || !["baixo", "medio", "alto"].includes(riskLevel)) {
+      throw new Error("Nível de risco deve ser 'baixo', 'medio' ou 'alto'");
+    }
+
     // Validações específicas por categoria
     this.validateByCategory(type, category, data);
   }
@@ -75,37 +95,32 @@ class SaveInvestment {
   validateByCategory(type, category, data) {
     const validSubtypes = {
       renda_fixa: {
-        fundos_investimento: [
-          "CDB",
-          "LCI",
-          "LCA",
-          "LC",
-          "Tesouro Direto",
-          "Debêntures",
-        ],
-        previdencia_privada: ["PGBL", "VGBL", "Previdência Corporativa"],
-        bolsa_valores: ["Tesouro Direto"],
+        cdb: ["CDB", "CDB Verde"],
+        lci: ["LCI"],
+        lca: ["LCA"],
+        tesouro_direto: ["Tesouro Selic", "Tesouro IPCA+", "Tesouro Prefixado"],
+        debentures: ["Debênture"],
       },
       renda_variavel: {
         fundos_investimento: [
-          "Fundos de Ações",
-          "Fundos Multimercado",
-          "Fundos Cambiais",
-          "ETFs",
+          "Fundo Multimercado",
+          "Fundo de Ações",
+          "Fundo Cambial",
         ],
-        previdencia_privada: ["VGBL Multimercado", "PGBL Multimercado"],
-        bolsa_valores: ["Ações", "FIIs", "BDRs", "Options", "Futuros"],
+        fundos_imobiliarios: ["FII"],
+        acoes: ["Carteira Diversificada", "Ações Individuais"],
+        criptomoedas: ["Portfolio Crypto", "Bitcoin", "Ethereum"],
       },
     };
 
     const allowedSubtypes = validSubtypes[type][category];
-    if (!allowedSubtypes.includes(data.subtype)) {
+    if (!allowedSubtypes || !allowedSubtypes.includes(data.subtype)) {
       throw new Error(
         `Subtipo '${
           data.subtype
-        }' não é válido para ${type} - ${category}. Tipos permitidos: ${allowedSubtypes.join(
-          ", "
-        )}`
+        }' não é válido para ${type} - ${category}. Tipos permitidos: ${
+          allowedSubtypes ? allowedSubtypes.join(", ") : "Nenhum"
+        }`
       );
     }
 

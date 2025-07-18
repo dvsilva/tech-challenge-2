@@ -104,13 +104,40 @@ const InvestmentSchema = new Schema(
       type: String,
       required: true,
     },
-    value: {
-      type: Number,
+    category: {
+      type: String,
       required: true,
+    },
+    subtype: {
+      type: String,
     },
     name: {
       type: String,
       required: true,
+    },
+    value: {
+      type: Number,
+      required: true,
+    },
+    initialValue: {
+      type: Number,
+      required: true,
+    },
+    currentYield: {
+      type: Number,
+      default: 0,
+    },
+    riskLevel: {
+      type: String,
+      enum: ["baixo", "medio", "alto"],
+      required: true,
+    },
+    purchaseDate: {
+      type: Date,
+      required: true,
+    },
+    maturityDate: {
+      type: Date,
     },
     accountId: {
       type: Schema.Types.ObjectId,
@@ -118,7 +145,10 @@ const InvestmentSchema = new Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    versionKey: false,
+  }
 );
 
 const UserSchema = new Schema(

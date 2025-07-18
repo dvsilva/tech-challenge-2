@@ -33,21 +33,37 @@ class GetInvestmentById {
             100
           : 0;
 
+      const investmentObj = investment.toObject();
+
+      // Remover campos desnecessários
+      const { __v, createdAt, updatedAt, accountId, ...cleanInvestment } =
+        investmentObj;
+
       const enrichedInvestment = {
-        ...investment.toObject(),
+        id: cleanInvestment._id,
+        type: cleanInvestment.type,
+        category: cleanInvestment.category,
+        subtype: cleanInvestment.subtype,
+        name: cleanInvestment.name,
+        value: cleanInvestment.value,
+        initialValue: cleanInvestment.initialValue,
+        currentYield: cleanInvestment.currentYield,
         profit,
         profitPercentage: parseFloat(profitPercentage.toFixed(2)),
-        isMatured: investment.maturityDate
-          ? new Date() >= new Date(investment.maturityDate)
+        riskLevel: cleanInvestment.riskLevel,
+        purchaseDate: cleanInvestment.purchaseDate,
+        maturityDate: cleanInvestment.maturityDate,
+        isMatured: cleanInvestment.maturityDate
+          ? new Date() >= new Date(cleanInvestment.maturityDate)
           : false,
-        daysToMaturity: investment.maturityDate
+        daysToMaturity: cleanInvestment.maturityDate
           ? Math.ceil(
-              (new Date(investment.maturityDate) - new Date()) /
+              (new Date(cleanInvestment.maturityDate) - new Date()) /
                 (1000 * 60 * 60 * 24)
             )
           : null,
         investmentDays: Math.ceil(
-          (new Date() - new Date(investment.purchaseDate)) /
+          (new Date() - new Date(cleanInvestment.purchaseDate)) /
             (1000 * 60 * 60 * 24)
         ),
       };

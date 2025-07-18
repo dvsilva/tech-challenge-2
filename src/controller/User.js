@@ -2,7 +2,6 @@ const userDTO = require("../models/User");
 const accountDTO = require("../models/Account");
 const cardDTO = require("../models/Card");
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "tech-challenge";
 
 class UserController {
   constructor(di = {}) {
@@ -120,7 +119,9 @@ class UserController {
     res.status(200).json({
       message: "Usuário autenticado com sucesso",
       result: {
-        token: jwt.sign(userToTokenize, JWT_SECRET, { expiresIn: "12h" }),
+        token: jwt.sign(userToTokenize, process.env.JWT_SECRET, {
+          expiresIn: "12h",
+        }),
       },
     });
   }
@@ -282,7 +283,7 @@ class UserController {
   }
   static getToken(token) {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       return decoded;
     } catch (error) {
       return null;

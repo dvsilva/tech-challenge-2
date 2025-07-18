@@ -35,12 +35,28 @@ class GetInvestment {
               100
             : 0;
 
+        const investmentObj = investment.toObject();
+
+        // Remover campos desnecessários
+        const { __v, createdAt, updatedAt, accountId, ...cleanInvestment } =
+          investmentObj;
+
         return {
-          ...investment.toObject(),
+          id: cleanInvestment._id,
+          type: cleanInvestment.type,
+          category: cleanInvestment.category,
+          subtype: cleanInvestment.subtype,
+          name: cleanInvestment.name,
+          value: cleanInvestment.value,
+          initialValue: cleanInvestment.initialValue,
+          currentYield: cleanInvestment.currentYield,
           profit,
           profitPercentage: parseFloat(profitPercentage.toFixed(2)),
-          isMatured: investment.maturityDate
-            ? new Date() >= new Date(investment.maturityDate)
+          riskLevel: cleanInvestment.riskLevel,
+          purchaseDate: cleanInvestment.purchaseDate,
+          maturityDate: cleanInvestment.maturityDate,
+          isMatured: cleanInvestment.maturityDate
+            ? new Date() >= new Date(cleanInvestment.maturityDate)
             : false,
         };
       });

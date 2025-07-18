@@ -99,6 +99,7 @@ class InvestmentRepository {
             totalValue: { $sum: "$value" },
             totalInitialValue: { $sum: "$initialValue" },
             count: { $sum: 1 },
+            averageYield: { $avg: "$currentYield" },
           },
         },
       ]);

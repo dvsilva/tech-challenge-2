@@ -73,17 +73,20 @@ class DataInitializerService {
     return investments
       .map((investment) => ({
         type: investment.type,
-        value: investment.value,
+        category: investment.category,
+        subtype: investment.subtype,
         name: investment.name,
-        accountId: accountMapping[investment.id_user] || null,
-        dateCreated: investment.dateCreated
-          ? new Date(investment.dateCreated)
+        value: investment.value,
+        initialValue: investment.initialValue,
+        currentYield: investment.currentYield || 0,
+        riskLevel: investment.riskLevel || "medio",
+        purchaseDate: investment.purchaseDate
+          ? new Date(investment.purchaseDate)
           : new Date(),
         maturityDate: investment.maturityDate
           ? new Date(investment.maturityDate)
           : null,
-        interestRate: investment.interestRate || null,
-        riskLevel: investment.riskLevel || "medio",
+        accountId: accountMapping[investment.id_user] || null,
         originalId: investment.id, // Mantém o ID original para referência
       }))
       .filter((inv) => inv.accountId); // Remove investimentos sem conta válida
