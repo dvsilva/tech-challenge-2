@@ -20,7 +20,8 @@ provider "aws" {
 
 # S3 Bucket for Tech Challenge 2
 resource "aws_s3_bucket" "tech_challenge_bucket" {
-  bucket = var.bucket_name
+  bucket        = var.bucket_name
+  force_destroy = true
 
   tags = {
     Name        = "Tech Challenge 2 Bucket"

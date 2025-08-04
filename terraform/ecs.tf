@@ -307,6 +307,26 @@ resource "aws_ssm_parameter" "ecr_aws_secret_key" {
   }
 }
 
+resource "aws_ssm_parameter" "alb_https_url" {
+  name  = "/${var.app_name}/${var.environment}/alb-https-url"
+  type  = "String"
+  value = "https://${var.alb_dns_name}"
+
+  tags = {
+    Name = "${var.app_name}-alb-https-url"
+  }
+}
+
+resource "aws_ssm_parameter" "alb_url" {
+  name  = "/${var.app_name}/${var.environment}/alb-url"
+  type  = "String"
+  value = "http://${var.alb_dns_name}"
+
+  tags = {
+    Name = "${var.app_name}-alb-url"
+  }
+}
+
 # ECS Task Definition
 resource "aws_ecs_task_definition" "app" {
   family                   = var.app_name
@@ -356,14 +376,6 @@ resource "aws_ecs_task_definition" "app" {
             "http://${var.alb_dns_name}",
             "https://${var.alb_dns_name}"
           ]))
-        },
-        {
-          name  = "ALB_URL"
-          value = "http://${var.alb_dns_name}"
-        },
-        {
-          name  = "ALB_HTTPS_URL"  
-          value = "https://${var.alb_dns_name}"
         }
       ]
 
@@ -383,6 +395,14 @@ resource "aws_ecs_task_definition" "app" {
         {
           name      = "AWS_SECRET_ACCESS_KEY"
           valueFrom = aws_ssm_parameter.aws_secret_key.arn
+        },
+        {
+          name      = "ALB_HTTPS_URL"
+          valueFrom = aws_ssm_parameter.alb_https_url.arn
+        },
+        {
+          name      = "ALB_URL"
+          valueFrom = aws_ssm_parameter.alb_url.arn
         }
       ]
 
